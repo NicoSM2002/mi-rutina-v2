@@ -1,0 +1,13 @@
+{
+  "name": "Mi Rutina — Nicolás Saravia",
+  "short_name": "Mi Rutina",
+  "description": "Plan de entrenamiento personalizado",
+  "start_url": "/mi-rutina/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
