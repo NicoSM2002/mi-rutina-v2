@@ -580,7 +580,6 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .meals-content::-webkit-scrollbar { display:none; }
 .meal-card {
   background:var(--s1); border:1px solid var(--b); border-radius:16px;
-  overflow:hidden;
 }
 .meal-card-header {
   display:flex; align-items:center; gap:10px;
@@ -594,10 +593,11 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .meal-card-title { font-size:14px; font-weight:700; color:var(--t1); }
 .meal-card-sub { font-size:11px; color:var(--t2); margin-top:1px; }
 .meal-textarea {
-  width:100%; background:transparent; border:none; border-top:1px solid var(--b);
+  display:block; width:100%; background:transparent; border:none;
+  border-top:1px solid var(--b); border-radius:0 0 16px 16px;
   padding:14px 16px 18px; color:var(--t1); font-family:'Inter',sans-serif;
   font-size:15px; outline:none; resize:none; min-height:110px;
-  -webkit-appearance:none; line-height:1.6;
+  -webkit-appearance:none; line-height:1.6; box-sizing:border-box;
 }
 .meal-textarea::placeholder { color:var(--t3); }
 
