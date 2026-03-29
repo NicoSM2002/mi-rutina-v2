@@ -1510,7 +1510,7 @@ function renderMeals() {
         placeholder="Ej: ${s.label === 'Desayuno' ? '2 huevos, arepa, café' : s.label === 'Almuerzo' ? 'Arroz, pollo, ensalada' : 'Describí lo que comiste...'}"
         oninput="saveMealInputs()">${dayData[s.key]}</textarea>
       <div class="meal-photo-row">
-        <input type="file" accept="image/*" capture="environment" id="file-${s.key}"
+        <input type="file" accept="image/*" id="file-${s.key}"
           style="display:none" onchange="handlePhotoSelected('${s.key}', this)">
         <button class="meal-photo-btn" onclick="document.getElementById('file-${s.key}').click()">
           📷 Foto
