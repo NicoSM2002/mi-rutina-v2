@@ -595,8 +595,8 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .meal-textarea {
   display:block; width:100%; background:transparent; border:none;
   border-top:1px solid var(--b); border-radius:0 0 16px 16px;
-  padding:14px 16px 18px; color:var(--t1); font-family:'Inter',sans-serif;
-  font-size:16px; outline:none; resize:none; min-height:60px;
+  padding:10px 16px 12px; color:var(--t1); font-family:'Inter',sans-serif;
+  font-size:16px; outline:none; resize:none; min-height:48px;
   -webkit-appearance:none; line-height:1.6; box-sizing:border-box;
 }
 .meal-textarea::placeholder { color:var(--t3); }
@@ -1575,9 +1575,9 @@ function removePhoto(slot) {
 async function sendMeals() {
   saveMealInputs();
   const dayData = mealsData[currentMealDay];
-  const hasAny = MEAL_SLOTS.some(s => dayData[s.key].trim());
+  const hasAny = MEAL_SLOTS.some(s => dayData[s.key].trim() || photosData[currentMealDay][s.key]);
   if (!hasAny) {
-    alert('Agregá al menos una comida antes de enviar.');
+    alert('Agregá al menos una comida o foto antes de enviar.');
     return;
   }
 
