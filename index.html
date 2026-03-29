@@ -1259,6 +1259,35 @@ function handleOverlayClick(e) {
 const WORKER_URL = 'https://mirutina.nicolas-f07.workers.dev';
 let chatHistory = [];
 
+function buildContext() {
+  const profile = `PERFIL DE NICOLÁS SARAVIA:
+- Peso: 67.9 kg | Grasa: 11.3% | Músculo: 57.1 kg | IMC: 21 | BMR: 1723 kcal
+- Progreso julio→enero: Peso +1.4 kg, Músculo +0.7 kg, Brazo +5.5 cm, Pecho/Espalda +3.8 cm, Muslo +2.5 cm, Edad metabólica 21 años`;
+
+  const day = data[currentDay];
+  if (!day) return profile;
+
+  let routineText = `\nRUTINA ACTIVA — ${currentDay.toUpperCase()} (${day.title}) — SEMANA ${currentWeek}:\n`;
+  routineText += `Variante: ${day.sub}\n`;
+
+  if (day.warmup) routineText += `Calentamiento: ${day.warmup.join(', ')}\n`;
+
+  day.circuits.forEach(c => {
+    routineText += `\n${c.label} (descanso: ${c.rest}):\n`;
+    c.exercises.forEach(e => {
+      const s1 = `S1: ${e.name} — ${e.w1} × ${e.reps}`;
+      const s2 = `S2: ${e.name2} — ${e.w2} × ${e.reps2 || e.reps}`;
+      routineText += `  • ${s1} | ${s2}\n`;
+      if (e.tip)  routineText += `    Técnica S1: ${e.tip}\n`;
+      if (e.tip2) routineText += `    Técnica S2: ${e.tip2}\n`;
+    });
+  });
+
+  if (day.nota) routineText += `\nNota del entrenador: ${day.nota}`;
+
+  return profile + routineText;
+}
+
 function openChat() {
   document.getElementById('chat-overlay').classList.add('show');
   setTimeout(() => document.getElementById('chat-input').focus(), 400);
@@ -1289,7 +1318,7 @@ async function sendChat() {
     const res = await fetch(WORKER_URL, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ messages: chatHistory })
+      body: JSON.stringify({ messages: chatHistory, context: buildContext() })
     });
     const data = await res.json();
     const reply = data.content?.[0]?.text || 'No pude obtener respuesta.';
