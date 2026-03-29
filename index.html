@@ -2081,6 +2081,7 @@ async function confirmComplete() {
 /* ── chat ── */
 const WORKER_URL = 'https://mirutina.nicolas-f07.workers.dev';
 let chatHistory = [];
+let athleteMeals = [];
 
 function buildContext() {
   const profile = `PERFIL DE NICOLÁS SARAVIA:
@@ -2108,12 +2109,36 @@ function buildContext() {
 
   if (day.nota) routineText += `\nNota del entrenador: ${day.nota}`;
 
-  return profile + routineText;
+  let mealsText = '';
+  if (athleteMeals.length > 0) {
+    mealsText = '\n\nHISTORIAL DE COMIDAS RECIENTES (últimas 7 entradas):\n';
+    const slots = ['desayuno','mediasNueves','almuerzo','onces','comida'];
+    const slotLabels = { desayuno:'Desayuno', mediasNueves:'Medias nueves', almuerzo:'Almuerzo', onces:'Onces', comida:'Cena' };
+    athleteMeals.slice(0, 7).forEach(r => {
+      mealsText += `\n${r.dayLabel || r.day} (${r.date || ''}):\n`;
+      slots.forEach(s => {
+        if (r.meals?.[s]?.trim()) mealsText += `  ${slotLabels[s]}: ${r.meals[s]}\n`;
+        if (r.analyses?.[s])      mealsText += `  → Análisis: ${r.analyses[s].replace(/\n/g,' | ')}\n`;
+      });
+    });
+  }
+
+  return profile + routineText + mealsText;
 }
 
-function openChat() {
+async function openChat() {
   document.getElementById('chat-overlay').classList.add('show');
   setTimeout(() => document.getElementById('chat-input').focus(), 400);
+  if (athleteMeals.length === 0) {
+    try {
+      const res = await fetch(WORKER_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'get-data', client:'nicolas' })
+      });
+      const data = await res.json();
+      athleteMeals = data.meals || [];
+    } catch { athleteMeals = []; }
+  }
 }
 function closeChat() {
   document.getElementById('chat-overlay').classList.remove('show');
