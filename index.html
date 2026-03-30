@@ -796,6 +796,12 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
   color:#fff; cursor:pointer; transition:opacity .15s;
 }
 .complete-confirm:active { opacity:.8; }
+
+@keyframes confettiFall {
+  0%   { transform:translateY(0) rotate(0deg) scale(1); opacity:1; }
+  80%  { opacity:1; }
+  100% { transform:translateY(110vh) rotate(720deg) scale(.5); opacity:0; }
+}
 .complete-cancel {
   padding:15px 20px; border-radius:14px; border:1px solid var(--b);
   background:var(--s2); font-family:'Inter',sans-serif;
@@ -2250,6 +2256,25 @@ function closeComplete() {
   document.getElementById('complete-overlay').classList.remove('show');
 }
 
+function launchConfetti() {
+  const colors = ['#6366f1','#818cf8','#22d3ee','#34d399','#fbbf24','#c084fc','#f87171'];
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
+  document.body.appendChild(wrap);
+  for (let i = 0; i < 90; i++) {
+    const p = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 8;
+    const x = Math.random() * 100;
+    const delay = Math.random() * 0.7;
+    const dur = 1.4 + Math.random() * 1.2;
+    const round = Math.random() > 0.5 ? '50%' : '3px';
+    p.style.cssText = `position:absolute;left:${x}%;top:-12px;width:${size}px;height:${size}px;background:${color};border-radius:${round};animation:confettiFall ${dur}s ease-in ${delay}s forwards;`;
+    wrap.appendChild(p);
+  }
+  setTimeout(() => wrap.remove(), 3200);
+}
+
 async function confirmComplete() {
   const btn = document.getElementById('complete-confirm');
   const notes = document.getElementById('complete-notes').value.trim();
@@ -2271,7 +2296,8 @@ async function confirmComplete() {
     const data = await res.json();
     if (data.ok) {
       btn.textContent = '✅ ¡Enviado!';
-      setTimeout(() => closeComplete(), 1500);
+      launchConfetti();
+      setTimeout(() => closeComplete(), 2500);
     } else {
       btn.textContent = 'Error, intentá de nuevo';
       btn.disabled = false;
