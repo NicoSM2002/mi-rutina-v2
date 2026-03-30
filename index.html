@@ -848,7 +848,7 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 #trainer-login, #athlete-login {
   background:var(--bg);
   display:flex; flex-direction:column;
-  padding:24px; position:relative;
+  position:relative;
 }
 .tlogin-back {
   position:absolute;
@@ -1076,16 +1076,14 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
     <input class="tlogin-input" id="athlete-username" type="text"
       placeholder="Usuario" autocomplete="off" autocapitalize="none"
       onkeydown="if(event.key==='Enter') athleteLogin()">
-    <button class="tlogin-btn" style="background:linear-gradient(135deg,var(--ac),var(--acl));box-shadow:0 4px 16px rgba(99,102,241,.3)" onclick="athleteLogin()">Entrar →</button>
+    <button class="tlogin-btn" style="background:linear-gradient(135deg,var(--ac),var(--acl));box-shadow:0 4px 16px rgba(99,102,241,.3)" onclick="athleteLogin()">Entrar</button>
     <div class="tlogin-error" id="athlete-error"></div>
   </div>
 </div>
 
 <!-- ══ TRAINER LOGIN ══ -->
 <div class="screen" id="trainer-login">
-  <div class="tlogin-back">
-    <button class="back-btn" onclick="show('role-select')">‹ Volver</button>
-  </div>
+  <div class="tlogin-back"><button class="back-btn" onclick="show('role-select')">‹ Volver</button></div>
   <div class="tlogin-body">
     <div class="tlogin-icon">📋</div>
     <div class="tlogin-title">Portal Entrenador</div>
@@ -1093,7 +1091,7 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
     <input class="tlogin-input" id="trainer-username" type="text"
       placeholder="Usuario" autocomplete="off" autocapitalize="none"
       onkeydown="if(event.key==='Enter') trainerLogin()">
-    <button class="tlogin-btn" onclick="trainerLogin()">Entrar →</button>
+    <button class="tlogin-btn" onclick="trainerLogin()">Entrar</button>
     <div class="tlogin-error" id="trainer-error"></div>
   </div>
 </div>
