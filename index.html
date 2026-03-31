@@ -1098,6 +1098,15 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .cardio-sub { font-size:12px; color:var(--t2); margin-top:2px; }
 
 /* Rest day */
+/* Step-by-step flow */
+.step-indicator { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding:0 2px; }
+.step-label { font-size:11px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:.8px; }
+.step-dots { display:flex; gap:5px; align-items:center; }
+.step-dot { width:7px; height:7px; border-radius:50%; background:var(--b2); border:1.5px solid var(--b); transition:all .25s; }
+.step-dot.done { background:var(--gr); border-color:var(--gr); }
+.step-dot.active { background:var(--ac); border-color:var(--ac); width:18px; border-radius:3px; }
+.step-next-btn { width:100%; padding:16px; border:none; border-radius:14px; cursor:pointer; background:linear-gradient(135deg,#059669,#34d399); color:#fff; font-size:15px; font-weight:700; letter-spacing:.2px; }
+
 .wu-gif-btn { background:none; border:none; color:var(--cy); cursor:pointer; font-size:12px; padding:0 4px; vertical-align:middle; opacity:.8; }
 .wu-gif-btn:active { opacity:1; }
 .wu-photo { margin:6px 0 2px; }
@@ -1474,6 +1483,7 @@ function showRoutine() {
       <button class="day-chip" data-day="jueves" onclick="setDay('jueves')">Jueves · Hombros</button>
       <button class="day-chip" data-day="viernes" onclick="setDay('viernes')">Viernes · Brazos</button>`;
   }
+  routineStep = 0;
   show('routine'); render();
 }
 function showProfile()  { show(ATHLETE_USERS[currentAthlete === 'nicolas' ? 'nsaravia' : 'msaravia'].screen); }
@@ -1481,8 +1491,9 @@ function showMeals()    { show('meals'); renderMeals(); }
 window.addEventListener('load', () => { setTimeout(() => show('role-select'), 2600); });
 
 /* ── state ── */
-let currentWeek = 1;
-let currentDay  = 'lunes';
+let currentWeek  = 1;
+let currentDay   = 'lunes';
+let routineStep  = 0;
 
 const MUSC = {
   pecho:'mb-pecho', espalda:'mb-espalda', triceps:'mb-triceps',
@@ -2128,12 +2139,19 @@ let data = JSON.parse(JSON.stringify(FALLBACK_DATA));
 /* ── week / day ── */
 function setWeek(w) {
   currentWeek = w;
+  routineStep = 0;
   document.querySelectorAll('.week-seg-btn').forEach((b,i) => b.classList.toggle('active', i+1===w));
   render();
 }
 function setDay(d) {
   currentDay = d;
+  routineStep = 0;
   document.querySelectorAll('#routine-days-bar .day-chip').forEach(b => b.classList.toggle('active', b.dataset.day === d));
+  render();
+  document.getElementById('content').scrollTop = 0;
+}
+function nextStep() {
+  routineStep++;
   render();
   document.getElementById('content').scrollTop = 0;
 }
@@ -2145,29 +2163,98 @@ function renderWuItem(item, uid) {
   return `<div class="warmup-item">${text} <button class="wu-gif-btn" onclick="togglePhoto('${uid}','${img}')">🎬</button></div><div class="ex-photo wu-photo" id="${uid}"></div>`;
 }
 
+/* ── exercise card html (shared helper) ── */
+function renderExCard(ex, ci, ei, w) {
+  const nameChanged = w === 2 && ex.name2 && ex.name2 !== ex.name;
+  const currentName = nameChanged ? ex.name2 : ex.name;
+  const currentTip  = (w === 2 && ex.tip2)  ? ex.tip2  : ex.tip;
+  const currentReps = (w === 2 && ex.reps2) ? ex.reps2 : ex.reps;
+  const currentImg  = (w === 2 && ex.img2)  ? ex.img2  : ex.img;
+  const wv = w === 1 ? ex.w1 : ex.w2;
+  const up = w === 2 && !nameChanged && ex.w1 !== ex.w2;
+  const tid = `tip_${ci}_${ei}`;
+  const pid = `photo_${ci}_${ei}`;
+  const mCls = ex.muscle ? (MUSC[ex.muscle] || '') : '';
+  const muscleName = ex.muscle ? ex.muscle
+    .replace('isquio','Isquio').replace('cuadriceps','Cuádriceps')
+    .replace('gluteo','Glúteo').replace('pantorrilla','Pantorrilla')
+    .replace('trapecio','Trapecio').replace('hombros','Hombros')
+    .replace('pecho','Pecho').replace('espalda','Espalda')
+    .replace('triceps','Tríceps').replace('biceps','Bíceps')
+    .replace('abdomen','Abdomen') : '';
+  const st = ex.setType || 'normal';
+  const currentSteps = w === 1 ? (ex.steps1||[]) : (ex.steps2||[]);
+  const isSpecial = st !== 'normal' && currentSteps.length > 0;
+  const badgeHtml = st === 'dropset'
+    ? `<span class="ex-set-badge ds">DROP SET</span>`
+    : st === 'piramidal' ? `<span class="ex-set-badge pir">PIRAMIDAL</span>` : '';
+  const stepsHtml = isSpecial
+    ? `<div class="ex-steps-view">${currentSteps.map(s=>`<div class="ex-step-pill"><span class="sp-w">${s.w||'—'}</span><span class="sp-r">${s.reps||'—'}</span></div>`).join('')}</div>` : '';
+  return `<div class="ex-card">
+    <div class="ex-top">
+      <div class="ex-left">
+        <div class="ex-name">${currentName}${nameChanged?'<span class="new-chip">NUEVO</span>':''}${badgeHtml}</div>
+        ${ex.muscle?`<span class="muscle-badge ${mCls}">${muscleName}</span>`:''}
+      </div>
+      ${!isSpecial?`<div class="ex-right">
+        <div class="ex-weight${up?' inc':''}">${wv}${up?'<span class="inc-chip">↑</span>':''}</div>
+        <div class="ex-reps">${currentReps}</div>
+      </div>`:''}
+    </div>
+    ${stepsHtml}
+    <div class="ex-actions">
+      <button class="ex-act-btn tip-btn" onclick="toggleTip('${tid}')">📋 Técnica</button>
+      ${currentImg?`<button class="ex-act-btn gif-btn" onclick="togglePhoto('${pid}','${currentImg}')">🎬 Ver GIF</button>`:''}
+    </div>
+    <div class="tip-text" id="${tid}">${currentTip}</div>
+    ${currentImg?`<div class="ex-photo" id="${pid}"></div>`:''}
+  </div>`;
+}
+
 /* ── render ── */
 function render() {
   const day = data[currentDay];
   const w = currentWeek;
+  const totalSteps = 1 + day.circuits.length + (day.cardio ? 1 : 0);
+  if (routineStep >= totalSteps) routineStep = totalSteps - 1;
+  const isLast = routineStep === totalSteps - 1;
+
+  const stepLabels = ['🔥 Calentamiento',
+    ...day.circuits.map(c => c.label),
+    ...(day.cardio ? ['🏃 Cardio'] : [])];
 
   let html = `<div class="day-header"><div class="day-title">${day.title}</div><div class="day-sub">${day.sub}</div></div>`;
 
-  /* warmup */
-  html += `<div class="warmup-card"><h3>🔥 Calentamiento</h3>`;
-  let wuIdx = 0;
-  if (day.warmupHombro) {
-    html += `<div class="wu-section-title">Hombro <span style="font-weight:400;color:var(--pu);text-transform:none;letter-spacing:0">× 2 vueltas</span></div>`;
-    html += `<div class="warmup-items">`;
-    day.warmupHombro.forEach(item => { html += renderWuItem(item, `wu_h_${wuIdx++}`); });
-    html += `</div><hr class="wu-divider">`;
+  /* step indicator */
+  html += `<div class="step-indicator">
+    <span class="step-label">${stepLabels[routineStep]}</span>
+    <div class="step-dots">`;
+  for (let i = 0; i < totalSteps; i++) {
+    const cls = i < routineStep ? 'done' : i === routineStep ? 'active' : '';
+    html += `<div class="step-dot ${cls}"></div>`;
   }
-  html += `<div class="wu-section-title">Del día <span style="font-weight:400;color:var(--pu);text-transform:none;letter-spacing:0">× 2 vueltas</span></div>`;
-  html += `<div class="warmup-items">`;
-  day.warmup.forEach(item => { html += renderWuItem(item, `wu_d_${wuIdx++}`); });
   html += `</div></div>`;
 
-  /* circuits */
-  day.circuits.forEach((c, ci) => {
+  /* content for current step */
+  if (routineStep === 0) {
+    /* warmup */
+    html += `<div class="warmup-card"><h3>🔥 Calentamiento</h3>`;
+    let wuIdx = 0;
+    if (day.warmupHombro) {
+      html += `<div class="wu-section-title">Hombro <span style="font-weight:400;color:var(--pu);text-transform:none;letter-spacing:0">× 2 vueltas</span></div>`;
+      html += `<div class="warmup-items">`;
+      day.warmupHombro.forEach(item => { html += renderWuItem(item, `wu_h_${wuIdx++}`); });
+      html += `</div><hr class="wu-divider">`;
+    }
+    html += `<div class="wu-section-title">Del día <span style="font-weight:400;color:var(--pu);text-transform:none;letter-spacing:0">× 2 vueltas</span></div>`;
+    html += `<div class="warmup-items">`;
+    day.warmup.forEach(item => { html += renderWuItem(item, `wu_d_${wuIdx++}`); });
+    html += `</div></div>`;
+
+  } else if (routineStep <= day.circuits.length) {
+    /* circuit */
+    const ci = routineStep - 1;
+    const c = day.circuits[ci];
     html += `<div class="circuit-section ${c.cls}">
       <div class="circuit-hdr">
         <span class="circuit-num">${c.label}</span>
@@ -2175,67 +2262,24 @@ function render() {
         <button class="circuit-rest" onclick="startTimer(${parseInt(c.rest)})">⏱ ${c.rest}</button>
       </div>
       <div class="ex-cards">`;
-
-    c.exercises.forEach((ex, ei) => {
-      const nameChanged = w === 2 && ex.name2 && ex.name2 !== ex.name;
-      const currentName = nameChanged ? ex.name2 : ex.name;
-      const currentTip  = (w === 2 && ex.tip2)  ? ex.tip2  : ex.tip;
-      const currentReps = (w === 2 && ex.reps2) ? ex.reps2 : ex.reps;
-      const currentImg  = (w === 2 && ex.img2)  ? ex.img2  : ex.img;
-      const wv = w === 1 ? ex.w1 : ex.w2;
-      const up = w === 2 && !nameChanged && ex.w1 !== ex.w2;
-      const tid = `tip_${ci}_${ei}`;
-      const pid = `photo_${ci}_${ei}`;
-      const mCls = ex.muscle ? (MUSC[ex.muscle] || '') : '';
-      const muscleName = ex.muscle ? ex.muscle
-        .replace('isquio','Isquio').replace('cuadriceps','Cuádriceps')
-        .replace('gluteo','Glúteo').replace('pantorrilla','Pantorrilla')
-        .replace('trapecio','Trapecio').replace('hombros','Hombros')
-        .replace('pecho','Pecho').replace('espalda','Espalda')
-        .replace('triceps','Tríceps').replace('biceps','Bíceps')
-        .replace('abdomen','Abdomen') : '';
-
-      const st = ex.setType || 'normal';
-      const currentSteps = w === 1 ? (ex.steps1||[]) : (ex.steps2||[]);
-      const isSpecial = st !== 'normal' && currentSteps.length > 0;
-      const badgeHtml = st === 'dropset'
-        ? `<span class="ex-set-badge ds">DROP SET</span>`
-        : st === 'piramidal'
-          ? `<span class="ex-set-badge pir">PIRAMIDAL</span>`
-          : '';
-      const stepsHtml = isSpecial
-        ? `<div class="ex-steps-view">${currentSteps.map(s=>`<div class="ex-step-pill"><span class="sp-w">${s.w||'—'}</span><span class="sp-r">${s.reps||'—'}</span></div>`).join('')}</div>`
-        : '';
-      html += `<div class="ex-card">
-        <div class="ex-top">
-          <div class="ex-left">
-            <div class="ex-name">${currentName}${nameChanged ? '<span class="new-chip">NUEVO</span>' : ''}${badgeHtml}</div>
-            ${ex.muscle ? `<span class="muscle-badge ${mCls}">${muscleName}</span>` : ''}
-          </div>
-          ${!isSpecial ? `<div class="ex-right">
-            <div class="ex-weight${up ? ' inc' : ''}">${wv}${up ? '<span class="inc-chip">↑</span>' : ''}</div>
-            <div class="ex-reps">${currentReps}</div>
-          </div>` : ''}
-        </div>
-        ${stepsHtml}
-        <div class="ex-actions">
-          <button class="ex-act-btn tip-btn" onclick="toggleTip('${tid}')">📋 Técnica</button>
-          ${currentImg ? `<button class="ex-act-btn gif-btn" onclick="togglePhoto('${pid}','${currentImg}')">🎬 Ver GIF</button>` : ''}
-        </div>
-        <div class="tip-text" id="${tid}">${currentTip}</div>
-        ${currentImg ? `<div class="ex-photo" id="${pid}"></div>` : ''}
-      </div>`;
-    });
-
+    c.exercises.forEach((ex, ei) => { html += renderExCard(ex, ci, ei, w); });
     html += `</div></div>`;
-  });
 
-  if (day.cardio) {
+  } else {
+    /* cardio */
     html += `<div class="cardio-card"><div class="cardio-icon">🏃</div><div class="cardio-body"><div class="cardio-label">Cardio Final</div><div class="cardio-detail">${day.cardio}</div><div class="cardio-sub">Al finalizar los circuitos</div></div></div>`;
   }
 
+  /* nota — siempre visible */
   html += `<div class="nota-card"><h4>💬 Nota del entrenador</h4><p>${day.nota}</p></div>`;
-  html += `<div class="complete-wrap"><button class="complete-btn" onclick="openComplete()">✅ Completar rutina del día</button></div>`;
+
+  /* botón */
+  if (isLast) {
+    html += `<div class="complete-wrap"><button class="complete-btn" onclick="openComplete()">✅ Completar rutina del día</button></div>`;
+  } else {
+    html += `<div class="complete-wrap"><button class="step-next-btn" onclick="nextStep()">Listo ✓ &nbsp;→&nbsp; Siguiente</button></div>`;
+  }
+
   document.getElementById('content').innerHTML = html;
 }
 
