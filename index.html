@@ -262,7 +262,9 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
   background:var(--bg); border:1px solid var(--b);
   border-radius:8px; padding:8px 12px;
   font-size:13px; color:var(--t1); font-weight:500;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
 }
+.wu-text { flex:1; }
 .wu-divider { border:none; border-top:1px solid var(--b); margin:10px 0; }
 
 /* Circuit */
@@ -1106,9 +1108,7 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .step-dot.active { background:var(--ac); border-color:var(--ac); width:18px; border-radius:3px; }
 .step-next-btn { width:100%; padding:16px; border:none; border-radius:14px; cursor:pointer; background:linear-gradient(135deg,#059669,#34d399); color:#fff; font-size:15px; font-weight:700; letter-spacing:.2px; }
 
-.wu-gif-btn { background:none; border:none; color:var(--cy); cursor:pointer; font-size:12px; padding:0 4px; vertical-align:middle; opacity:.8; }
-.wu-gif-btn:active { opacity:1; }
-.wu-photo { margin:6px 0 2px; }
+.wu-photo { margin:4px 0 2px; }
 
 .rest-card {
   margin:32px 0; background:var(--s1); border:1px solid var(--b);
@@ -2158,8 +2158,11 @@ function nextStep() {
 function renderWuItem(item, uid) {
   const text = typeof item === 'string' ? item : item.text;
   const img  = typeof item === 'object' && item.img ? item.img : null;
-  if (!img) return `<div class="warmup-item">${text}</div>`;
-  return `<div class="warmup-item">${text} <button class="wu-gif-btn" onclick="togglePhoto('${uid}','${img}')">🎬</button></div><div class="ex-photo wu-photo" id="${uid}"></div>`;
+  if (!img) return `<div class="warmup-item"><span class="wu-text">${text}</span></div>`;
+  return `<div class="warmup-item">
+    <span class="wu-text">${text}</span>
+    <button class="ex-act-btn gif-btn" onclick="togglePhoto('${uid}','${img}')">🎬 Ver GIF</button>
+  </div><div class="ex-photo wu-photo" id="${uid}"></div>`;
 }
 
 /* ── exercise card html (shared helper) ── */
