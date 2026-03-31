@@ -1187,6 +1187,14 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
       </div>
       <div class="client-arrow">→</div>
     </div>
+    <div class="client-card" onclick="openTrainerClient('msaravia','María Saravia')">
+      <div class="client-avatar" style="background:linear-gradient(135deg,var(--pu),var(--cy))">MS</div>
+      <div>
+        <div class="client-name">María Saravia</div>
+        <div class="client-meta">Plan: Pérdida de grasa y tonificación</div>
+      </div>
+      <div class="client-arrow">→</div>
+    </div>
   </div>
 </div>
 
@@ -1239,6 +1247,47 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
         <div class="prog-row"><span class="prog-label">Pecho / Espalda</span><span class="prog-val">+3.8 cm</span></div>
         <div class="prog-row"><span class="prog-label">Muslo</span><span class="prog-val">+2.5 cm</span></div>
         <div class="prog-row"><span class="prog-label">Edad metabólica</span><span class="prog-val">21 años</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-wrap" style="display:flex;gap:10px;">
+    <button class="cta-btn" onclick="showRoutine()" style="font-size:14px;padding:15px 10px;">💪 Rutina</button>
+    <button class="cta-btn" onclick="showMeals()" style="font-size:14px;padding:15px 10px;background:linear-gradient(135deg,#22d3ee,#6366f1)">🍽️ Comidas</button>
+  </div>
+</div>
+
+<!-- ══ PROFILE MARÍA SARAVIA ══ -->
+<div class="screen" id="profile-msaravia">
+  <div class="profile-hero">
+    <div class="profile-name">María <em>Saravia</em></div>
+    <div class="profile-goal">Plan de Entrenamiento · Objetivo: Pérdida de grasa y tonificación</div>
+  </div>
+
+  <div class="profile-body">
+    <div>
+      <div class="section-label">Métricas actuales</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="sv">80.2</div><div class="sl">Peso kg</div></div>
+        <div class="stat-card"><div class="sv">33.0%</div><div class="sl">Grasa</div></div>
+        <div class="stat-card"><div class="sv">50.53</div><div class="sl">Músculo kg</div></div>
+      </div>
+      <div class="stats-grid two" style="margin-top:8px">
+        <div class="stat-card"><div class="sv">28.4</div><div class="sl">IMC</div></div>
+        <div class="stat-card"><div class="sv">1521</div><div class="sl">BMR kcal</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Composición corporal</div>
+      <div class="progress-card">
+        <div class="pc-title">📊 Métricas detalladas</div>
+        <div class="prog-row"><span class="prog-label">Grasa subcutánea</span><span class="prog-val">29.2%</span></div>
+        <div class="prog-row"><span class="prog-label">Grasa visceral</span><span class="prog-val">Nivel 11</span></div>
+        <div class="prog-row"><span class="prog-label">Agua corporal</span><span class="prog-val">46.0%</span></div>
+        <div class="prog-row"><span class="prog-label">Masa ósea</span><span class="prog-val">3.20 kg</span></div>
+        <div class="prog-row"><span class="prog-label">Proteína</span><span class="prog-val">15.4%</span></div>
+        <div class="prog-row"><span class="prog-label">Edad metabólica</span><span class="prog-val">33 años</span></div>
       </div>
     </div>
   </div>
@@ -1348,7 +1397,7 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
       <button class="chat-close" onclick="closeChat()">✕</button>
     </div>
     <div class="chat-messages" id="chat-messages">
-      <div class="chat-msg assistant">¡Hola Nico! 💪 Soy tu asistente de entrenamiento. Preguntame lo que quieras sobre tu rutina — técnica, pesos, descansos, lo que sea.</div>
+      <div class="chat-msg assistant" id="chat-greeting">¡Hola Nico! 💪 Soy tu asistente de entrenamiento. Preguntame lo que quieras sobre tu rutina — técnica, pesos, descansos, lo que sea.</div>
     </div>
     <div class="chat-input-row">
       <textarea class="chat-input" id="chat-input" rows="1" placeholder="Escribí tu pregunta…" onkeydown="chatKeydown(event)"></textarea>
@@ -1382,7 +1431,7 @@ function show(id) {
   document.getElementById(id).classList.add('active');
 }
 function showRoutine() { show('routine'); render(); }
-function showProfile()  { show('profile'); }
+function showProfile()  { show(ATHLETE_USERS[currentAthlete === 'nicolas' ? 'nsaravia' : 'msaravia'].screen); }
 function showMeals()    { show('meals'); renderMeals(); }
 window.addEventListener('load', () => { setTimeout(() => show('role-select'), 2600); });
 
@@ -1960,19 +2009,22 @@ function handleOverlayClick(e) {
 }
 
 /* ── trainer portal ── */
-const ATHLETE_USERS = { nsaravia: 'profile' };
+const ATHLETE_USERS  = { nsaravia: { screen:'profile',          client:'nicolas'  },
+                          msaravia: { screen:'profile-msaravia', client:'msaravia' } };
 const TRAINER_USERS = { entrenador: true };
+let currentAthlete = 'nicolas';
 
 function athleteLogin() {
-  const user = document.getElementById('athlete-username').value.trim().toLowerCase();
-  const errEl = document.getElementById('athlete-error');
-  if (!ATHLETE_USERS[user]) {
-    errEl.textContent = 'Usuario no encontrado.';
-    return;
-  }
+  const user   = document.getElementById('athlete-username').value.trim().toLowerCase();
+  const errEl  = document.getElementById('athlete-error');
+  const config = ATHLETE_USERS[user];
+  if (!config) { errEl.textContent = 'Usuario no encontrado.'; return; }
   errEl.textContent = '';
   document.getElementById('athlete-username').value = '';
-  show(ATHLETE_USERS[user]);
+  currentAthlete = config.client;
+  data = JSON.parse(JSON.stringify(FALLBACK_DATA));
+  loadRoutine();
+  show(config.screen);
 }
 let trainerClientId = null;
 let trainerData = { completions:[], meals:[] };
@@ -2414,10 +2466,18 @@ const WORKER_URL = 'https://mirutina.nicolas-f07.workers.dev';
 let chatHistory = [];
 let athleteMeals = [];
 
-function buildContext() {
-  const profile = `PERFIL DE NICOLÁS SARAVIA:
+const ATHLETE_PROFILES = {
+  nicolas: `PERFIL DE NICOLÁS SARAVIA:
 - Peso: 67.9 kg | Grasa: 11.3% | Músculo: 57.1 kg | IMC: 21 | BMR: 1723 kcal
-- Progreso julio→enero: Peso +1.4 kg, Músculo +0.7 kg, Brazo +5.5 cm, Pecho/Espalda +3.8 cm, Muslo +2.5 cm, Edad metabólica 21 años`;
+- Progreso julio→enero: Peso +1.4 kg, Músculo +0.7 kg, Brazo +5.5 cm, Pecho/Espalda +3.8 cm, Muslo +2.5 cm, Edad metabólica 21 años`,
+  msaravia: `PERFIL DE MARÍA SARAVIA:
+- Peso: 80.2 kg | Grasa: 33.0% | Músculo: 50.53 kg | IMC: 28.4 | BMR: 1521 kcal
+- Grasa subcutánea: 29.2% | Grasa visceral: 11 | Agua corporal: 46.0% | Edad metabólica: 33 años
+- Objetivo: Pérdida de grasa y tonificación muscular`
+};
+
+function buildContext() {
+  const profile = ATHLETE_PROFILES[currentAthlete] || ATHLETE_PROFILES.nicolas;
 
   const day = data[currentDay];
   if (!day) return profile;
@@ -2459,12 +2519,14 @@ function buildContext() {
 
 async function openChat() {
   document.getElementById('chat-overlay').classList.add('show');
+  const greetings = { nicolas:'¡Hola Nico! 💪 Soy tu asistente de entrenamiento. Preguntame lo que quieras sobre tu rutina — técnica, pesos, descansos, lo que sea.', msaravia:'¡Hola María! 💪 Soy tu asistente de entrenamiento. Preguntame lo que quieras sobre tu rutina — técnica, ejercicios, descansos, lo que sea.' };
+  document.getElementById('chat-greeting').textContent = greetings[currentAthlete] || greetings.nicolas;
   setTimeout(() => document.getElementById('chat-input').focus(), 400);
   if (athleteMeals.length === 0) {
     try {
       const res = await fetch(WORKER_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'get-data', client:'nicolas' })
+        body: JSON.stringify({ action:'get-data', client:currentAthlete })
       });
       const data = await res.json();
       athleteMeals = data.meals || [];
@@ -2533,7 +2595,7 @@ async function loadRoutine() {
   try {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'get-routine', client:'nicolas' })
+      body: JSON.stringify({ action:'get-routine', client:currentAthlete })
     });
     const json = await res.json();
     if (json.routine && Object.keys(json.routine).length) {
