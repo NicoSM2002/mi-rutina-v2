@@ -1332,12 +1332,12 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
       <button class="week-seg-btn active" onclick="setWeek(1)">SEMANA 1</button>
       <button class="week-seg-btn" onclick="setWeek(2)">SEMANA 2</button>
     </div>
-    <div class="days-bar">
-      <button class="day-chip active" onclick="setDay('lunes')">Lunes · Pecho</button>
-      <button class="day-chip" onclick="setDay('martes')">Martes · Espalda</button>
-      <button class="day-chip" onclick="setDay('miercoles')">Miércoles · Pierna</button>
-      <button class="day-chip" onclick="setDay('jueves')">Jueves · Hombros</button>
-      <button class="day-chip" onclick="setDay('viernes')">Viernes · Brazos</button>
+    <div class="days-bar" id="routine-days-bar">
+      <button class="day-chip active" data-day="lunes" onclick="setDay('lunes')">Lunes · Pecho</button>
+      <button class="day-chip" data-day="martes" onclick="setDay('martes')">Martes · Espalda</button>
+      <button class="day-chip" data-day="miercoles" onclick="setDay('miercoles')">Miércoles · Pierna</button>
+      <button class="day-chip" data-day="jueves" onclick="setDay('jueves')">Jueves · Hombros</button>
+      <button class="day-chip" data-day="viernes" onclick="setDay('viernes')">Viernes · Brazos</button>
     </div>
   </div>
   <div class="r-content" id="content"></div>
@@ -1452,7 +1452,26 @@ function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-function showRoutine() { show('routine'); render(); }
+function showRoutine() {
+  const bar = document.getElementById('routine-days-bar');
+  if (currentAthlete === 'msaravia') {
+    currentDay = 'sesion1';
+    bar.innerHTML = `
+      <button class="day-chip active" data-day="sesion1" onclick="setDay('sesion1')">Sesión 1 · Inferior</button>
+      <button class="day-chip" data-day="sesion2" onclick="setDay('sesion2')">Sesión 2 · Hombros</button>
+      <button class="day-chip" data-day="sesion3" onclick="setDay('sesion3')">Sesión 3 · Cuádriceps</button>
+      <button class="day-chip" data-day="sesion4" onclick="setDay('sesion4')">Sesión 4 · Pecho</button>`;
+  } else {
+    currentDay = 'lunes';
+    bar.innerHTML = `
+      <button class="day-chip active" data-day="lunes" onclick="setDay('lunes')">Lunes · Pecho</button>
+      <button class="day-chip" data-day="martes" onclick="setDay('martes')">Martes · Espalda</button>
+      <button class="day-chip" data-day="miercoles" onclick="setDay('miercoles')">Miércoles · Pierna</button>
+      <button class="day-chip" data-day="jueves" onclick="setDay('jueves')">Jueves · Hombros</button>
+      <button class="day-chip" data-day="viernes" onclick="setDay('viernes')">Viernes · Brazos</button>`;
+  }
+  show('routine'); render();
+}
 function showProfile()  { show(ATHLETE_USERS[currentAthlete === 'nicolas' ? 'nsaravia' : 'msaravia'].screen); }
 function showMeals()    { show('meals'); renderMeals(); }
 window.addEventListener('load', () => { setTimeout(() => show('role-select'), 2600); });
@@ -1814,7 +1833,7 @@ const FALLBACK_DATA = {
   }
 };
 const FALLBACK_DATA_MSARAVIA = {
-  lunes: {
+  sesion1: {
     title:'Tren Inferior',
     sub:'Prensa · Sentadilla · Zancadas',
     warmup:['Prensa horizontal 30 reps (liviano — sin peso)','Tijeras estáticas 15 reps c/pierna (sin peso)'],
@@ -1865,7 +1884,7 @@ const FALLBACK_DATA_MSARAVIA = {
     ],
     nota:'Enfócate en la técnica antes que el peso. La sentadilla búlgara es uno de los mejores ejercicios para cuádriceps y glúteo — baja con control. El step-up lo haces solo con la pierna de trabajo, nada de ayudarte con la otra.'
   },
-  martes: {
+  sesion2: {
     title:'Hombro · Bíceps · Tríceps',
     sub:'Press militar · Vuelos · Curls',
     warmup:['Vuelos laterales mancuernas 5 lbs × 16 reps','Curl bíceps barra sin peso × 18 reps','Press militar mancuernas 5 lbs × 16 reps'],
@@ -1934,13 +1953,7 @@ const FALLBACK_DATA_MSARAVIA = {
     ],
     nota:'Los hombros necesitan calentamiento — hacelo despacio y completo. En el circuito 2 el press Arnold activa todo el deltoides con la rotación. El tríceps se trabaja bien en la posición elongada (extensión sobre cabeza). No te saltes el cardio al final.'
   },
-  miercoles: {
-    title:'Descanso',
-    sub:'Recuperación activa',
-    rest: true,
-    nota:'Día libre para la recuperación muscular. Podés hacer caminata liviana, stretching o movilidad.'
-  },
-  jueves: {
+  sesion3: {
     title:'Cuádriceps',
     sub:'Sentadilla · Extensión · Step-up',
     warmup:['Sentadilla con barra sin peso × 16 reps','Tijeras en movimiento sin peso × 10 reps c/pierna'],
@@ -1997,7 +2010,7 @@ const FALLBACK_DATA_MSARAVIA = {
     ],
     nota:'Día de cuádriceps pesado. La sentadilla con barra va primero cuando estás más fresca. La extensión de pierna aísla el cuádriceps — contrae 1 segundo arriba en cada repetición. Terminás con zancadas para quemar las fibras restantes.'
   },
-  viernes: {
+  sesion4: {
     title:'Pecho · Abdomen',
     sub:'Press · Aperturas · Core',
     warmup:['Push-up rodillas × 10 reps (o push-up completo)','Crunch básico × 30 reps'],
@@ -2067,8 +2080,7 @@ function setWeek(w) {
 }
 function setDay(d) {
   currentDay = d;
-  const days = ['lunes','martes','miercoles','jueves','viernes'];
-  document.querySelectorAll('.day-chip').forEach((b,i) => b.classList.toggle('active', days[i]===d));
+  document.querySelectorAll('#routine-days-bar .day-chip').forEach(b => b.classList.toggle('active', b.dataset.day === d));
   render();
   document.getElementById('content').scrollTop = 0;
 }
@@ -2079,13 +2091,6 @@ function render() {
   const w = currentWeek;
 
   let html = `<div class="day-header"><div class="day-title">${day.title}</div><div class="day-sub">${day.sub}</div></div>`;
-
-  /* rest day */
-  if (day.rest) {
-    html += `<div class="rest-card"><div class="rest-icon">😴</div><div class="rest-title">Día de Descanso</div><div class="rest-sub">${day.nota || 'Recuperación activa. Podés hacer caminata liviana, stretching o movilidad.'}</div></div>`;
-    document.getElementById('content').innerHTML = html;
-    return;
-  }
 
   /* warmup */
   html += `<div class="warmup-card"><h3>🔥 Calentamiento</h3>`;
@@ -2337,7 +2342,7 @@ async function openTrainerClient(clientId, clientName) {
   document.getElementById('tab-comidas').classList.remove('active');
   document.getElementById('tab-editar').classList.remove('active');
   editorData = JSON.parse(JSON.stringify(data));
-  editorDay = 'lunes';
+  editorDay = clientId === 'msaravia' ? 'sesion1' : 'lunes';
   editorWeek = 1;
   show('trainer-client');
 
@@ -2906,8 +2911,13 @@ function renderRoutineEditor() {
   if (!editorData) editorData = JSON.parse(JSON.stringify(data));
   const day = editorData[editorDay];
   const w = editorWeek;
-  const days = ['lunes','martes','miercoles','jueves','viernes'];
-  const dayLabels = { lunes:'Lun', martes:'Mar', miercoles:'Mié', jueves:'Jue', viernes:'Vie' };
+  const isSessions = trainerClientId === 'msaravia';
+  const days = isSessions
+    ? ['sesion1','sesion2','sesion3','sesion4']
+    : ['lunes','martes','miercoles','jueves','viernes'];
+  const dayLabels = isSessions
+    ? { sesion1:'S1', sesion2:'S2', sesion3:'S3', sesion4:'S4' }
+    : { lunes:'Lun', martes:'Mar', miercoles:'Mié', jueves:'Jue', viernes:'Vie' };
 
   // Week selector
   let html = `<div class="week-seg" style="margin-bottom:14px">
