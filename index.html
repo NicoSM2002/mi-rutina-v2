@@ -1098,6 +1098,10 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .cardio-sub { font-size:12px; color:var(--t2); margin-top:2px; }
 
 /* Rest day */
+.wu-gif-btn { background:none; border:none; color:var(--cy); cursor:pointer; font-size:12px; padding:0 4px; vertical-align:middle; opacity:.8; }
+.wu-gif-btn:active { opacity:1; }
+.wu-photo { margin:6px 0 2px; }
+
 .rest-card {
   margin:32px 0; background:var(--s1); border:1px solid var(--b);
   border-radius:16px; padding:32px 20px; text-align:center;
@@ -1490,8 +1494,15 @@ const FALLBACK_DATA = {
   lunes: {
     title:'Pecho & Bíceps',
     sub:'S1: Smith + poleas · S2: Mancuernas libres + variación de curl',
-    warmupHombro:['Vuelos frontales mancuernas 5 lbs × 15 reps','Vuelos laterales mancuernas 5 lbs × 15 reps','Press mancuernas 5 lbs × 15 reps'],
-    warmup:['Smith inclinado 20 lbs × 20 reps','Curl barra 30 lbs × 20 reps'],
+    warmupHombro:[
+      {text:'Vuelos frontales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion frontal alternas/Elevacion frontal alternas.gif'},
+      {text:'Vuelos laterales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion lateral mancuernas/Elevacion lateral mancuernas.gif'},
+      {text:'Press mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Press hombro mancuernas sentado/Press hombro mancuernas sentado.gif'},
+    ],
+    warmup:[
+      {text:'Smith inclinado 20 lbs × 20 reps',img:'./gifs/pecho/Press inclinado Smith/Press inclinado Smith.gif'},
+      {text:'Curl barra 30 lbs × 20 reps',img:'./gifs/biceps/Curl biceps barra/Curl biceps barra.gif'},
+    ],
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'60s descanso', exercises:[
         { name:'Press inclinado Smith', name2:'Press inclinado mancuernas',
@@ -1559,8 +1570,15 @@ const FALLBACK_DATA = {
   martes: {
     title:'Espalda & Tríceps',
     sub:'S1: jalón ancho + remo cable · S2: agarre neutro + remo T-bar',
-    warmupHombro:['Vuelos frontales mancuernas 5 lbs × 15 reps','Vuelos laterales mancuernas 5 lbs × 15 reps','Press mancuernas 5 lbs × 15 reps'],
-    warmup:['Jalón pecho agarre ancho 70 lbs × 20 reps','Extensión tríceps soga 40 lbs × 20 reps'],
+    warmupHombro:[
+      {text:'Vuelos frontales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion frontal alternas/Elevacion frontal alternas.gif'},
+      {text:'Vuelos laterales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion lateral mancuernas/Elevacion lateral mancuernas.gif'},
+      {text:'Press mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Press hombro mancuernas sentado/Press hombro mancuernas sentado.gif'},
+    ],
+    warmup:[
+      {text:'Jalón pecho agarre ancho 70 lbs × 20 reps',img:'./gifs/espalda/Jalon al pecho agarre ancho/Jalon al pecho agarre ancho.gif'},
+      {text:'Extensión tríceps soga 40 lbs × 20 reps',img:'./gifs/triceps/Extension triceps soga/Extension triceps soga.gif'},
+    ],
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'60s descanso', exercises:[
         { name:'Jalón al pecho agarre ancho', name2:'Jalón agarre neutro estrecho',
@@ -1628,7 +1646,10 @@ const FALLBACK_DATA = {
   miercoles: {
     title:'Pierna',
     sub:'S1: barra + prensa · S2: goblet + búlgara + curl sentado (posición elongada)',
-    warmup:['Extensión pierna 60 lbs × 20 reps','Caminata inclinada en cinta 10 min'],
+    warmup:[
+      {text:'Extensión pierna 60 lbs × 20 reps',img:'./gifs/cuadriceps/Extension de pierna/Extension de pierna.gif'},
+      {text:'Caminata inclinada en cinta 10 min'},
+    ],
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'90s descanso', exercises:[
         { name:'Sentadilla con barra', name2:'Sentadilla goblet (mancuerna)',
@@ -1696,8 +1717,15 @@ const FALLBACK_DATA = {
   jueves: {
     title:'Hombros',
     sub:'S1: mancuernas + face pull · S2: barra + cables con tensión constante',
-    warmupHombro:['Vuelos frontales mancuernas 5 lbs × 15 reps','Vuelos laterales mancuernas 5 lbs × 15 reps','Press mancuernas 5 lbs × 15 reps'],
-    warmup:['Rotación manguito mancuerna 5 lbs × 20 reps','Elevación lateral ligera 10 lbs × 20 reps'],
+    warmupHombro:[
+      {text:'Vuelos frontales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion frontal alternas/Elevacion frontal alternas.gif'},
+      {text:'Vuelos laterales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion lateral mancuernas/Elevacion lateral mancuernas.gif'},
+      {text:'Press mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Press hombro mancuernas sentado/Press hombro mancuernas sentado.gif'},
+    ],
+    warmup:[
+      {text:'Rotación manguito mancuerna 5 lbs × 20 reps'},
+      {text:'Elevación lateral ligera 10 lbs × 20 reps',img:'./gifs/hombros/Elevacion lateral mancuernas/Elevacion lateral mancuernas.gif'},
+    ],
     circuits:[
       { label:'Circuito 1 — Anterior & Lateral', cls:'c1', rest:'60s descanso', exercises:[
         { name:'Press hombro mancuernas sentado', name2:'Press hombro barra militar',
@@ -1765,8 +1793,15 @@ const FALLBACK_DATA = {
   viernes: {
     title:'Brazo Completo',
     sub:'S1: barra + cerrado · S2: EZ + variaciones cabeza larga / posición elongada',
-    warmupHombro:['Vuelos frontales mancuernas 5 lbs × 15 reps','Vuelos laterales mancuernas 5 lbs × 15 reps','Press mancuernas 5 lbs × 15 reps'],
-    warmup:['Curl barra 30 lbs × 20 reps','Extensión tríceps soga 40 lbs × 20 reps'],
+    warmupHombro:[
+      {text:'Vuelos frontales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion frontal alternas/Elevacion frontal alternas.gif'},
+      {text:'Vuelos laterales mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Elevacion lateral mancuernas/Elevacion lateral mancuernas.gif'},
+      {text:'Press mancuernas 5 lbs × 15 reps',img:'./gifs/hombros/Press hombro mancuernas sentado/Press hombro mancuernas sentado.gif'},
+    ],
+    warmup:[
+      {text:'Curl barra 30 lbs × 20 reps',img:'./gifs/biceps/Curl biceps barra/Curl biceps barra.gif'},
+      {text:'Extensión tríceps soga 40 lbs × 20 reps',img:'./gifs/triceps/Extension triceps soga/Extension triceps soga.gif'},
+    ],
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'60s descanso', exercises:[
         { name:'Curl bíceps barra', name2:'Curl barra EZ',
@@ -1836,7 +1871,10 @@ const FALLBACK_DATA_MSARAVIA = {
   sesion1: {
     title:'Tren Inferior',
     sub:'Prensa · Búlgara · Sumo · Zancadas',
-    warmup:['Prensa horizontal peso liviano × 30 reps','Tijeras estáticas × 15 reps c/pierna'],
+    warmup:[
+      {text:'Prensa horizontal peso liviano × 30 reps',img:'./gifs/cuadriceps/Prensa de pierna/Prensa de pierna.gif'},
+      {text:'Tijeras estáticas × 15 reps c/pierna',img:'./gifs/cuadriceps/Zancadas con mancuernas/Zancadas con mancuernas.gif'},
+    ],
     cardio:'Caminadora 20 min',
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'90s descanso', exercises:[
@@ -1887,7 +1925,11 @@ const FALLBACK_DATA_MSARAVIA = {
   sesion2: {
     title:'Hombro · Bíceps · Tríceps',
     sub:'Press militar · Vuelos · Curls · Tríceps',
-    warmup:['Vuelos laterales mancuernas 5 lbs × 16 reps','Curl bíceps barra sin peso × 18 reps','Press militar mancuernas 5 lbs × 16 reps'],
+    warmup:[
+      {text:'Vuelos laterales mancuernas 5 lbs × 16 reps',img:'./gifs/hombros/Elevacion lateral mancuernas/Elevacion lateral mancuernas.gif'},
+      {text:'Curl bíceps barra sin peso × 18 reps',img:'./gifs/biceps/Curl biceps barra/Curl biceps barra.gif'},
+      {text:'Press militar mancuernas 5 lbs × 16 reps',img:'./gifs/hombros/Press hombro mancuernas sentado/Press hombro mancuernas sentado.gif'},
+    ],
     cardio:'Caminadora 20 min — Nivel 6',
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'60s descanso', exercises:[
@@ -1956,7 +1998,10 @@ const FALLBACK_DATA_MSARAVIA = {
   sesion3: {
     title:'Cuádriceps',
     sub:'Sentadilla con barra · Extensión · Goblet · Step-up',
-    warmup:['Sentadilla con barra sin peso × 16 reps','Tijeras en movimiento × 10 reps c/pierna'],
+    warmup:[
+      {text:'Sentadilla con barra sin peso × 16 reps',img:'./gifs/cuadriceps/Sentadilla con barra/Sentadilla con barra.gif'},
+      {text:'Tijeras en movimiento × 10 reps c/pierna',img:'./gifs/cuadriceps/Zancadas con mancuernas/Zancadas con mancuernas.gif'},
+    ],
     cardio:'Caminadora 20 min',
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'90s descanso', exercises:[
@@ -2013,7 +2058,10 @@ const FALLBACK_DATA_MSARAVIA = {
   sesion4: {
     title:'Pecho · Abdomen',
     sub:'Press · Cierres · Core',
-    warmup:['Push-ups acostandote completamente × 10 reps','Crunch cortas × 30 reps'],
+    warmup:[
+      {text:'Push-ups acostandote completamente × 10 reps',img:'./gifs/pecho/Push-up con mancuernas/Push-up con mancuernas.gif'},
+      {text:'Crunch cortas × 30 reps'},
+    ],
     cardio:'Caminadora 20 min',
     circuits:[
       { label:'Circuito 1', cls:'c1', rest:'60s descanso', exercises:[
@@ -2085,6 +2133,13 @@ function setDay(d) {
   document.getElementById('content').scrollTop = 0;
 }
 
+function renderWuItem(item, uid) {
+  const text = typeof item === 'string' ? item : item.text;
+  const img  = typeof item === 'object' && item.img ? item.img : null;
+  if (!img) return `<div class="warmup-item">${text}</div>`;
+  return `<div class="warmup-item">${text} <button class="wu-gif-btn" onclick="togglePhoto('${uid}','${img}')">🎬</button></div><div class="ex-photo wu-photo" id="${uid}"></div>`;
+}
+
 /* ── render ── */
 function render() {
   const day = data[currentDay];
@@ -2094,15 +2149,16 @@ function render() {
 
   /* warmup */
   html += `<div class="warmup-card"><h3>🔥 Calentamiento</h3>`;
+  let wuIdx = 0;
   if (day.warmupHombro) {
     html += `<div class="wu-section-title">Hombro <span style="font-weight:400;color:var(--pu);text-transform:none;letter-spacing:0">× 2 vueltas</span></div>`;
     html += `<div class="warmup-items">`;
-    day.warmupHombro.forEach(item => { html += `<div class="warmup-item">${item}</div>`; });
+    day.warmupHombro.forEach(item => { html += renderWuItem(item, `wu_h_${wuIdx++}`); });
     html += `</div><hr class="wu-divider">`;
   }
   html += `<div class="wu-section-title">Del día <span style="font-weight:400;color:var(--pu);text-transform:none;letter-spacing:0">× 2 vueltas</span></div>`;
   html += `<div class="warmup-items">`;
-  day.warmup.forEach(item => { html += `<div class="warmup-item">${item}</div>`; });
+  day.warmup.forEach(item => { html += renderWuItem(item, `wu_d_${wuIdx++}`); });
   html += `</div></div>`;
 
   /* circuits */
@@ -2341,7 +2397,8 @@ async function openTrainerClient(clientId, clientName) {
   document.getElementById('tab-rutinas').classList.add('active');
   document.getElementById('tab-comidas').classList.remove('active');
   document.getElementById('tab-editar').classList.remove('active');
-  editorData = JSON.parse(JSON.stringify(data));
+  const edFb = clientId === 'msaravia' ? FALLBACK_DATA_MSARAVIA : FALLBACK_DATA;
+  editorData = JSON.parse(JSON.stringify(edFb));
   editorDay = clientId === 'msaravia' ? 'sesion1' : 'lunes';
   editorWeek = 1;
   show('trainer-client');
