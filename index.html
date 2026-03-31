@@ -1037,6 +1037,25 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .re-save-btn { width:100%; padding:16px; background:linear-gradient(135deg,var(--am),#f59e0b); border:none; border-radius:14px; font-family:'Inter',sans-serif; font-size:16px; font-weight:800; color:#1a1000; cursor:pointer; margin-top:14px; }
 .re-save-btn:active { opacity:.85; }
 .re-save-btn:disabled { opacity:.5; }
+.re-set-type { display:flex; gap:6px; margin-bottom:10px; }
+.re-set-type-btn { flex:1; padding:7px 4px; background:var(--s2); border:1px solid var(--b); border-radius:9px; color:var(--t2); font-family:'Inter',sans-serif; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase; letter-spacing:.5px; }
+.re-set-type-btn.active { background:rgba(99,102,241,.18); border-color:var(--ac); color:var(--acl); }
+.re-set-type-btn.ds.active { background:rgba(251,191,36,.15); border-color:var(--am); color:var(--am); }
+.re-set-type-btn.pir.active { background:rgba(192,132,252,.15); border-color:var(--pu); color:var(--pu); }
+.re-steps { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+.re-step-row { display:flex; gap:6px; align-items:center; }
+.re-step-num { font-size:11px; font-weight:700; color:var(--t3); width:18px; flex-shrink:0; text-align:center; }
+.re-step-del { background:none; border:none; color:var(--t3); font-size:18px; cursor:pointer; padding:0 4px; flex-shrink:0; line-height:1; }
+.re-step-del:active { color:#f87171; }
+.re-add-step { width:100%; padding:8px; background:none; border:1px dashed var(--b); border-radius:9px; color:var(--t2); font-family:'Inter',sans-serif; font-size:12px; font-weight:700; cursor:pointer; margin-top:4px; }
+.re-add-step:active { border-color:var(--ac); color:var(--acl); }
+.ex-set-badge { display:inline-block; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; margin-left:6px; vertical-align:middle; letter-spacing:.4px; }
+.ex-set-badge.ds { background:rgba(251,191,36,.15); color:var(--am); }
+.ex-set-badge.pir { background:rgba(192,132,252,.15); color:var(--pu); }
+.ex-steps-view { margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; }
+.ex-step-pill { display:flex; flex-direction:column; align-items:center; background:var(--s2); border:1px solid var(--b); border-radius:9px; padding:6px 10px; min-width:62px; }
+.ex-step-pill .sp-w { font-size:13px; font-weight:800; color:var(--t1); }
+.ex-step-pill .sp-r { font-size:11px; color:var(--t2); margin-top:1px; }
 
 /* ── EXERCISE PICKER ── */
 .expicker-overlay { position:fixed; inset:0; z-index:350; background:rgba(10,11,20,.95); display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -1787,17 +1806,29 @@ function render() {
         .replace('pecho','Pecho').replace('espalda','Espalda')
         .replace('triceps','Tríceps').replace('biceps','Bíceps') : '';
 
+      const st = ex.setType || 'normal';
+      const currentSteps = w === 1 ? (ex.steps1||[]) : (ex.steps2||[]);
+      const isSpecial = st !== 'normal' && currentSteps.length > 0;
+      const badgeHtml = st === 'dropset'
+        ? `<span class="ex-set-badge ds">DROP SET</span>`
+        : st === 'piramidal'
+          ? `<span class="ex-set-badge pir">PIRAMIDAL</span>`
+          : '';
+      const stepsHtml = isSpecial
+        ? `<div class="ex-steps-view">${currentSteps.map(s=>`<div class="ex-step-pill"><span class="sp-w">${s.w||'—'}</span><span class="sp-r">${s.reps||'—'}</span></div>`).join('')}</div>`
+        : '';
       html += `<div class="ex-card">
         <div class="ex-top">
           <div class="ex-left">
-            <div class="ex-name">${currentName}${nameChanged ? '<span class="new-chip">NUEVO</span>' : ''}</div>
+            <div class="ex-name">${currentName}${nameChanged ? '<span class="new-chip">NUEVO</span>' : ''}${badgeHtml}</div>
             ${ex.muscle ? `<span class="muscle-badge ${mCls}">${muscleName}</span>` : ''}
           </div>
-          <div class="ex-right">
+          ${!isSpecial ? `<div class="ex-right">
             <div class="ex-weight${up ? ' inc' : ''}">${wv}${up ? '<span class="inc-chip">↑</span>' : ''}</div>
             <div class="ex-reps">${currentReps}</div>
-          </div>
+          </div>` : ''}
         </div>
+        ${stepsHtml}
         <div class="ex-actions">
           <button class="ex-act-btn tip-btn" onclick="toggleTip('${tid}')">📋 Técnica</button>
           ${currentImg ? `<button class="ex-act-btn gif-btn" onclick="togglePhoto('${pid}','${currentImg}')">🎬 Ver GIF</button>` : ''}
@@ -2540,17 +2571,39 @@ function renderRoutineEditor() {
   day.circuits.forEach((circuit, ci) => {
     html += `<div class="re-circuit-card ${circuit.cls}"><div class="re-circuit-hdr">${circuit.label}</div>`;
     circuit.exercises.forEach((ex, ei) => {
+      const st = ex.setType || 'normal';
+      const steps1 = ex.steps1 || [];
+      const steps2 = ex.steps2 || [];
+      const renderSteps = (steps, week) => {
+        let s = `<div class="re-steps">`;
+        steps.forEach((step, si) => {
+          s += `<div class="re-step-row">
+            <span class="re-step-num">${si+1}</span>
+            <div class="re-wr-col"><input class="re-input" value="${step.w||''}" oninput="updateStep('${editorDay}',${ci},${ei},${week},${si},'w',this.value)" placeholder="Peso"><div class="re-input-label">Peso</div></div>
+            <div class="re-wr-col"><input class="re-input" value="${step.reps||''}" oninput="updateStep('${editorDay}',${ci},${ei},${week},${si},'reps',this.value)" placeholder="Reps"><div class="re-input-label">Reps</div></div>
+            <button class="re-step-del" onclick="removeStep('${editorDay}',${ci},${ei},${week},${si})">×</button>
+          </div>`;
+        });
+        s += `</div>`;
+        s += `<button class="re-add-step" onclick="addStep('${editorDay}',${ci},${ei},${week})">+ Agregar escalón</button>`;
+        return s;
+      };
       html += `<div class="re-exercise">
+        <div class="re-set-type">
+          <button class="re-set-type-btn${st==='normal'?' active':''}" onclick="setSetType('${editorDay}',${ci},${ei},'normal')">Normal</button>
+          <button class="re-set-type-btn ds${st==='dropset'?' active':''}" onclick="setSetType('${editorDay}',${ci},${ei},'dropset')">Drop set</button>
+          <button class="re-set-type-btn pir${st==='piramidal'?' active':''}" onclick="setSetType('${editorDay}',${ci},${ei},'piramidal')">Piramidal</button>
+        </div>
         <div class="re-ex-week">
           <div class="re-week-label">Semana 1</div>
           <div class="re-name-row">
             <button class="re-name-btn" onclick="openExercisePicker(${ci},${ei},1)">${ex.name}</button>
             <button class="re-change-btn" onclick="openExercisePicker(${ci},${ei},1)">Cambiar</button>
           </div>
-          <div class="re-wr-row">
+          ${st === 'normal' ? `<div class="re-wr-row">
             <div class="re-wr-col"><input class="re-input" value="${ex.w1||''}" oninput="updateEditorField('${editorDay}',${ci},${ei},'w1',this.value)" placeholder="Peso"><div class="re-input-label">Peso</div></div>
             <div class="re-wr-col"><input class="re-input" value="${ex.reps||''}" oninput="updateEditorField('${editorDay}',${ci},${ei},'reps',this.value)" placeholder="Reps"><div class="re-input-label">Reps</div></div>
-          </div>
+          </div>` : renderSteps(steps1, 1)}
         </div>
         <div class="re-ex-week">
           <div class="re-week-label">Semana 2</div>
@@ -2558,10 +2611,10 @@ function renderRoutineEditor() {
             <button class="re-name-btn" onclick="openExercisePicker(${ci},${ei},2)">${ex.name2||ex.name}</button>
             <button class="re-change-btn" onclick="openExercisePicker(${ci},${ei},2)">Cambiar</button>
           </div>
-          <div class="re-wr-row">
+          ${st === 'normal' ? `<div class="re-wr-row">
             <div class="re-wr-col"><input class="re-input" value="${ex.w2||''}" oninput="updateEditorField('${editorDay}',${ci},${ei},'w2',this.value)" placeholder="Peso"><div class="re-input-label">Peso</div></div>
             <div class="re-wr-col"><input class="re-input" value="${ex.reps2||ex.reps||''}" oninput="updateEditorField('${editorDay}',${ci},${ei},'reps2',this.value)" placeholder="Reps"><div class="re-input-label">Reps</div></div>
-          </div>
+          </div>` : renderSteps(steps2, 2)}
         </div>
       </div>`;
     });
@@ -2584,6 +2637,31 @@ function updateEditorField(day, ci, ei, field, value) {
 
 function updateEditorNota(day, value) {
   editorData[day].nota = value;
+}
+
+function setSetType(day, ci, ei, type) {
+  const ex = editorData[day].circuits[ci].exercises[ei];
+  ex.setType = type;
+  if (type !== 'normal' && !ex.steps1) ex.steps1 = [{w:'',reps:''},{w:'',reps:''},{w:'',reps:''}];
+  if (type !== 'normal' && !ex.steps2) ex.steps2 = [{w:'',reps:''},{w:'',reps:''},{w:'',reps:''}];
+  renderRoutineEditor();
+}
+
+function updateStep(day, ci, ei, week, si, field, value) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  editorData[day].circuits[ci].exercises[ei][key][si][field] = value;
+}
+
+function addStep(day, ci, ei, week) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  editorData[day].circuits[ci].exercises[ei][key].push({w:'',reps:''});
+  renderRoutineEditor();
+}
+
+function removeStep(day, ci, ei, week, si) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  editorData[day].circuits[ci].exercises[ei][key].splice(si, 1);
+  renderRoutineEditor();
 }
 
 function buildExerciseCatalog(query) {
