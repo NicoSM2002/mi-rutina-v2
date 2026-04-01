@@ -2888,7 +2888,10 @@ async function confirmComplete() {
       btn.textContent = '✅ ¡Enviado!';
       launchConfetti();
       advanceSession(currentAthlete);
-      setTimeout(() => closeComplete(), 2500);
+      setTimeout(() => {
+        closeComplete();
+        renderRestDay(getSessionState(currentAthlete));
+      }, 2500);
     } else {
       btn.textContent = 'Error, intentá de nuevo';
       btn.disabled = false;
@@ -3053,6 +3056,13 @@ async function loadRoutine() {
     const json = await res.json();
     if (json.routine && Object.keys(json.routine).length) {
       data = json.routine;
+      // Migrate old day-keyed data (lunes/martes/...) to session keys (sesion1/sesion2/...)
+      const dayToSession = { lunes:'sesion1', martes:'sesion2', miercoles:'sesion3', jueves:'sesion4', viernes:'sesion5' };
+      if (Object.keys(data).some(k => dayToSession[k])) {
+        const migrated = {};
+        for (const [k, v] of Object.entries(data)) { migrated[dayToSession[k] || k] = v; }
+        data = migrated;
+      }
       // Always restore img paths from fallback so GIF reorganizations never break the app
       const fb = currentAthlete === 'msaravia' ? FALLBACK_DATA_MSARAVIA : FALLBACK_DATA;
       for (const day of Object.keys(fb)) {
