@@ -2886,37 +2886,43 @@ const ATHLETE_PROFILES = {
 };
 
 function buildContext() {
+  const state = getSessionState(currentAthlete);
+
   const instructions = `Eres un asistente de entrenamiento personalizado. Reglas de respuesta:
 - Sé MUY conciso. Máximo 3-4 líneas por respuesta.
-- Si te preguntan qué entrenan un día, di solo los grupos musculares y ofrece enviar el detalle.
 - Usa un tono cercano y motivador, como un entrenador personal.
 - Puedes responder cualquier pregunta de fitness, nutrición, lesiones o salud deportiva — no solo sobre la rutina.
 - Si alguien menciona dolor o lesión, da una respuesta breve y recomienda consultar a un profesional si es necesario.
 - Nunca respondas con listas largas a menos que el atleta lo pida explícitamente.
-- Responde siempre en español neutro latinoamericano, sin usar voseo ni modismos regionales.\n\n`;
+- Responde siempre en español neutro latinoamericano, sin usar voseo ni modismos regionales.
+- ACCESO A RUTINAS: Solo tienes acceso completo a la sesión activa de hoy. De las otras sesiones solo conoces el grupo muscular general. Si alguien te pide los ejercicios, series o detalles de otra sesión, responde algo como: "Hoy solo tengo acceso a tu sesión de hoy — mañana cuando empieces esa sesión tendré todos los detalles listos para vos." Puedes mencionar el grupo muscular de otras sesiones pero nada más.\n\n`;
 
   const profile = ATHLETE_PROFILES[currentAthlete] || ATHLETE_PROFILES.nicolas;
 
-  if (!data || !Object.keys(data).length) return profile;
+  if (!data || !Object.keys(data).length) return instructions + profile;
 
-  let routineText = `\nRUTINA COMPLETA — SEMANA ACTIVA: ${currentWeek}\n`;
+  let routineText = `\nSESIÓN ACTIVA HOY: Sesión ${state.sessionNum} de ${state.total} — Semana ${currentWeek}\n`;
 
   for (const [dayKey, day] of Object.entries(data)) {
     if (!day || !day.title) continue;
     const isActive = dayKey === currentDay;
-    routineText += `\n── ${dayKey.toUpperCase()}${isActive ? ' (DÍA ACTIVO)' : ''}: ${day.title} ──\n`;
-    if (day.sub) routineText += `Variante: ${day.sub}\n`;
 
-    const wuAll = [...(day.warmupHombro||[]), ...(day.warmup||[])];
-    if (wuAll.length) routineText += `Calentamiento: ${wuAll.map(w => typeof w === 'string' ? w : w.text).join(', ')}\n`;
-    if (day.cardio) routineText += `Cardio: ${day.cardio}\n`;
-
-    (day.circuits || []).forEach(c => {
-      routineText += `${c.label}: `;
-      routineText += c.exercises.map(e => `${e.name} (${e.w1}×${e.reps})`).join(', ') + '\n';
-    });
-
-    if (isActive && day.nota) routineText += `Nota entrenador: ${day.nota}\n`;
+    if (isActive) {
+      // Full details for today's session
+      routineText += `\n── SESIÓN DE HOY (${dayKey.toUpperCase()}): ${day.title} ──\n`;
+      if (day.sub) routineText += `Variante: ${day.sub}\n`;
+      const wuAll = [...(day.warmupHombro||[]), ...(day.warmup||[])];
+      if (wuAll.length) routineText += `Calentamiento: ${wuAll.map(w => typeof w === 'string' ? w : w.text).join(', ')}\n`;
+      if (day.cardio) routineText += `Cardio: ${day.cardio}\n`;
+      (day.circuits || []).forEach(c => {
+        routineText += `${c.label}: `;
+        routineText += c.exercises.map(e => `${e.name} (${e.w1}×${e.reps})`).join(', ') + '\n';
+      });
+      if (day.nota) routineText += `Nota entrenador: ${day.nota}\n`;
+    } else {
+      // Only muscle group for other sessions
+      routineText += `${dayKey.toUpperCase()}: ${day.title} (sin acceso a detalles hoy)\n`;
+    }
   }
 
   let mealsText = '';
