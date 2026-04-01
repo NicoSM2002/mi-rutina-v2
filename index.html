@@ -1025,11 +1025,19 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
   border-left:3px solid var(--cy);
   padding:10px 12px; margin-top:8px;
   font-size:12px; color:var(--t2); line-height:1.7;
-  white-space:pre-wrap;
+  white-space:pre-wrap; display:none;
 }
-.tmeal-analysis-label {
-  font-size:11px; font-weight:700; color:var(--cy);
-  text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;
+.tmeal-analysis.show { display:block; }
+.tmeal-analysis-btn, .tmeal-analysis-btn {
+  margin-top:8px; padding:7px 12px; border-radius:8px; border:none;
+  background:rgba(34,211,238,.1); color:var(--cy);
+  font-size:11px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif;
+}
+.meal-analysis-btn {
+  padding:5px 10px; border-radius:8px; border:none;
+  background:rgba(34,211,238,.1); color:var(--cy);
+  font-size:11px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif;
+  white-space:nowrap; flex-shrink:0;
 }
 
 /* ── ROUTINE EDITOR ── */
@@ -2546,7 +2554,7 @@ function renderTrainerTab() {
             <div class="tmeal-slot-label">${s.label}</div>
             ${r.meals?.[s.key] ? `<div class="tmeal-slot-text">${r.meals[s.key]}</div>` : ''}
             ${r.photos?.[s.key] ? `<img class="tmeal-slot-photo" src="${r.photos[s.key]}">` : ''}
-            ${r.analyses?.[s.key] ? `<div class="tmeal-analysis"><div class="tmeal-analysis-label">🤖 Análisis nutricional</div>${r.analyses[s.key]}</div>` : ''}
+            ${r.analyses?.[s.key] ? `<button class="tmeal-analysis-btn" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.nextElementSibling.classList.contains('show')?'▲ Ocultar análisis':'🤖 Análisis nutricional'">🤖 Análisis nutricional</button><div class="tmeal-analysis">${r.analyses[s.key]}</div>` : ''}
           </div>`).join('');
       return `
         <div class="trecord-card">
@@ -2582,16 +2590,21 @@ function getTodayKey() { return new Date().toISOString().slice(0,10); }
 function getSentSlots() {
   return JSON.parse(localStorage.getItem(`mealsSent_${currentAthlete}_${getTodayKey()}`) || '{}');
 }
-function markSlotSent(slot) {
+function markSlotSent(slot, analysis) {
   const key = `mealsSent_${currentAthlete}_${getTodayKey()}`;
   const sent = getSentSlots();
   sent[slot] = true;
   localStorage.setItem(key, JSON.stringify(sent));
-  // Persist the data for this slot so it reappears on next visit
   const dKey = `mealsDay_${currentAthlete}_${getTodayKey()}`;
   const saved = JSON.parse(localStorage.getItem(dKey) || '{}');
-  saved[slot] = { text: mealsData[slot], photo: photosData[slot] };
+  saved[slot] = { text: mealsData[slot], photo: photosData[slot], analysis: analysis || null };
   localStorage.setItem(dKey, JSON.stringify(saved));
+}
+function showStoredAnalysis(slot) {
+  const dKey = `mealsDay_${currentAthlete}_${getTodayKey()}`;
+  const saved = JSON.parse(localStorage.getItem(dKey) || '{}');
+  const analysis = saved[slot]?.analysis;
+  if (analysis) showNutritionSummary(getTodayLabel(), { [slot]: analysis }, { [slot]: saved[slot]?.text || '' });
 }
 function loadTodayFromStorage() {
   const dKey = `mealsDay_${currentAthlete}_${getTodayKey()}`;
@@ -2616,15 +2629,29 @@ function renderMeals() {
   container.innerHTML = MEAL_SLOTS.map(s => {
     const hasPhoto = photosData[s.key];
     const isSent = !!sent[s.key];
+    if (isSent) {
+      const savedAnalysis = JSON.parse(localStorage.getItem(`mealsDay_${currentAthlete}_${getTodayKey()}`) || '{}')[s.key]?.analysis || null;
+      return `
+      <div class="meal-card sent" id="card-${s.key}">
+        <div class="meal-card-header">
+          <div class="meal-icon" style="background:${s.bg}">${s.icon}</div>
+          <div style="flex:1">
+            <div class="meal-card-title">${s.label}</div>
+            <div class="meal-card-sub">✓ Enviado</div>
+          </div>
+          ${savedAnalysis ? `<button class="meal-analysis-btn" onclick="showStoredAnalysis('${s.key}')">📊 Ver análisis</button>` : ''}
+          <div class="meal-sent-badge">✓</div>
+        </div>
+      </div>`;
+    }
     return `
-    <div class="meal-card${isSent ? ' sent' : ''}" id="card-${s.key}">
+    <div class="meal-card" id="card-${s.key}">
       <div class="meal-card-header">
         <div class="meal-icon" style="background:${s.bg}">${s.icon}</div>
         <div style="flex:1">
           <div class="meal-card-title">${s.label}</div>
-          <div class="meal-card-sub">${isSent ? '✓ Enviado' : s.sub}</div>
+          <div class="meal-card-sub">${s.sub}</div>
         </div>
-        ${isSent ? '<div class="meal-sent-badge">✓</div>' : ''}
       </div>
       <textarea class="meal-textarea" id="meal-${s.key}"
         placeholder="Ej: ${s.label === 'Desayuno' ? '2 huevos, arepa, café' : s.label === 'Almuerzo' ? 'Arroz, pollo, ensalada' : 'Describí lo que comiste...'}"
@@ -2632,13 +2659,13 @@ function renderMeals() {
       <div class="meal-photo-row">
         <input type="file" accept="image/*" id="file-${s.key}"
           style="display:none" onchange="handlePhotoSelected('${s.key}', this)">
-        ${!isSent ? `<button class="meal-photo-btn" onclick="document.getElementById('file-${s.key}').click()">📷 Foto</button>` : ''}
+        <button class="meal-photo-btn" onclick="document.getElementById('file-${s.key}').click()">📷 Foto</button>
         <span class="meal-uploading" id="uploading-${s.key}" style="display:none">Subiendo…</span>
         <img class="meal-photo-preview ${hasPhoto ? 'show' : ''}" id="preview-${s.key}"
-          src="${hasPhoto || ''}" onclick="${isSent ? '' : `removePhoto('${s.key}')`}">
-        ${!isSent ? `<button class="meal-photo-remove ${hasPhoto ? 'show' : ''}" id="remove-${s.key}" onclick="removePhoto('${s.key}')">✕</button>` : ''}
+          src="${hasPhoto || ''}" onclick="removePhoto('${s.key}')">
+        <button class="meal-photo-remove ${hasPhoto ? 'show' : ''}" id="remove-${s.key}" onclick="removePhoto('${s.key}')">✕</button>
       </div>
-      ${!isSent ? `<button class="meal-slot-send" id="slot-send-${s.key}" onclick="sendMeal('${s.key}')">Enviar ${s.label}</button>` : ''}
+      <button class="meal-slot-send" id="slot-send-${s.key}" onclick="sendMeal('${s.key}')">Enviar ${s.label}</button>
     </div>`;
   }).join('');
 }
@@ -2720,23 +2747,23 @@ async function sendMeal(slot) {
     });
     const data = await res.json();
     if (data.ok) {
-      markSlotSent(slot);
+      markSlotSent(slot, data.analysis || null);
+      // Replace card with compact sent version
       const card = document.getElementById(`card-${slot}`);
       if (card) {
-        card.classList.add('sent');
-        card.querySelector('.meal-card-sub').textContent = '✓ Enviado';
-        if (!card.querySelector('.meal-sent-badge')) {
-          const badge = document.createElement('div');
-          badge.className = 'meal-sent-badge';
-          badge.textContent = '✓';
-          card.querySelector('.meal-card-header').appendChild(badge);
-        }
-        btn.remove();
-        card.querySelector('.meal-photo-btn')?.remove();
-        card.querySelector(`#remove-${slot}`)?.remove();
-      }
-      if (data.analysis) {
-        setTimeout(() => showNutritionSummary(dayLabel, { [slot]: data.analysis }, { [slot]: text }), 500);
+        const slotMeta = MEAL_SLOTS.find(s => s.key === slot);
+        card.outerHTML = `
+        <div class="meal-card sent" id="card-${slot}">
+          <div class="meal-card-header">
+            <div class="meal-icon" style="background:${slotMeta.bg}">${slotMeta.icon}</div>
+            <div style="flex:1">
+              <div class="meal-card-title">${slotMeta.label}</div>
+              <div class="meal-card-sub">✓ Enviado</div>
+            </div>
+            ${data.analysis ? `<button class="meal-analysis-btn" onclick="showStoredAnalysis('${slot}')">📊 Ver análisis</button>` : ''}
+            <div class="meal-sent-badge">✓</div>
+          </div>
+        </div>`;
       }
     } else {
       btn.textContent = 'Error, intentá de nuevo';
