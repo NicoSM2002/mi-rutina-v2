@@ -2910,17 +2910,11 @@ function buildContext() {
     if (day.cardio) routineText += `Cardio: ${day.cardio}\n`;
 
     (day.circuits || []).forEach(c => {
-      routineText += `${c.label} (descanso: ${c.rest}):\n`;
-      c.exercises.forEach(e => {
-        const s1 = `S1: ${e.name} — ${e.w1} × ${e.reps}`;
-        const s2 = `S2: ${e.name2} — ${e.w2} × ${e.reps2 || e.reps}`;
-        routineText += `  • ${s1} | ${s2}\n`;
-        if (e.tip)  routineText += `    Técnica S1: ${e.tip}\n`;
-        if (e.tip2) routineText += `    Técnica S2: ${e.tip2}\n`;
-      });
+      routineText += `${c.label}: `;
+      routineText += c.exercises.map(e => `${e.name} (${e.w1}×${e.reps})`).join(', ') + '\n';
     });
 
-    if (day.nota) routineText += `Nota: ${day.nota}\n`;
+    if (isActive && day.nota) routineText += `Nota entrenador: ${day.nota}\n`;
   }
 
   let mealsText = '';
@@ -2985,10 +2979,15 @@ async function sendChat() {
       body: JSON.stringify({ messages: chatHistory, context: buildContext() })
     });
     const data = await res.json();
-    const reply = data.content || 'No pude obtener respuesta.';
-    typing.textContent = reply;
-    typing.classList.remove('typing');
-    chatHistory.push({ role:'assistant', content: reply });
+    if (data.content) {
+      typing.textContent = data.content;
+      typing.classList.remove('typing');
+      chatHistory.push({ role:'assistant', content: data.content });
+    } else {
+      typing.textContent = 'No pude obtener respuesta, intentá de nuevo.';
+      typing.classList.remove('typing');
+      chatHistory.pop(); // remove user msg so the conversation stays clean
+    }
   } catch(err) {
     typing.textContent = 'Error de conexión. Verificá tu internet.';
     typing.classList.remove('typing');
