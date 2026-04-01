@@ -2884,6 +2884,15 @@ const ATHLETE_PROFILES = {
 };
 
 function buildContext() {
+  const instructions = `Sos un asistente de entrenamiento personalizado. Reglas de respuesta:
+- Sé MUY conciso. Máximo 3-4 líneas por respuesta.
+- Si te preguntan qué entrenan un día, decí solo los grupos musculares y ofrecé enviar el detalle.
+- Usá un tono cercano y motivador, como un entrenador personal.
+- Podés responder cualquier pregunta de fitness, nutrición, lesiones o salud deportiva — no solo sobre la rutina.
+- Si alguien menciona dolor o lesión, dá una respuesta breve y recomendá consultar a un profesional si es necesario.
+- Nunca respondas con listas largas a menos que el atleta lo pida explícitamente.
+- Respondé siempre en español.\n\n`;
+
   const profile = ATHLETE_PROFILES[currentAthlete] || ATHLETE_PROFILES.nicolas;
 
   if (!data || !Object.keys(data).length) return profile;
@@ -2928,7 +2937,7 @@ function buildContext() {
     });
   }
 
-  return profile + routineText + mealsText;
+  return instructions + profile + routineText + mealsText;
 }
 
 async function openChat() {
