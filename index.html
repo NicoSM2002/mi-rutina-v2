@@ -2613,6 +2613,7 @@ async function handlePhotoSelected(slot, input) {
 
   const fd = new FormData();
   fd.append('photo', file);
+  fd.append('client', currentAthlete);
   fd.append('slot', slot);
   fd.append('day', currentMealDay);
 
@@ -2663,6 +2664,7 @@ async function sendMeals() {
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         action: 'meals',
+        client: currentAthlete,
         day: currentMealDay,
         dayLabel,
         meals: dayData,
@@ -2670,12 +2672,14 @@ async function sendMeals() {
       })
     });
     const data = await res.json();
+    console.log('sendMeals worker response:', JSON.stringify(data));
     if (data.ok) {
+      const snapshotMeals = JSON.parse(JSON.stringify(mealsData[currentMealDay]));
       btn.textContent = '✅ ¡Enviado!';
       setTimeout(() => {
         btn.disabled = false;
         btn.textContent = 'Enviar al entrenador';
-        showNutritionSummary(dayLabel, data.analyses || {}, mealsData[currentMealDay]);
+        showNutritionSummary(dayLabel, data.analyses || {}, snapshotMeals);
       }, 800);
     } else {
       btn.textContent = 'Error, intentá de nuevo';
@@ -2766,16 +2770,24 @@ function showNutritionSummary(dayLabel, analyses, meals) {
       </div>`).join('')}`;
   } else {
     // No photos analyzed — show just text summary
-    const filledSlots = slots.filter(s => mealsData[currentMealDay][s]?.trim());
+    const filledSlots = slots.filter(s => meals?.[s]?.trim());
     if (filledSlots.length) {
       html += `<div class="nutri-meals-title">Comidas del día</div>`;
       html += filledSlots.map(s => `
         <div class="nutri-meal-row">
           <div class="nutri-meal-name">${SLOT_LABELS[s]}</div>
-          <div style="font-size:13px;color:var(--t2);margin-top:4px">${mealsData[currentMealDay][s]}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:4px">${meals[s]}</div>
         </div>`).join('');
       html += `<div style="margin-top:16px;font-size:12px;color:var(--t2);text-align:center;line-height:1.6">Agregá fotos a tus comidas para obtener el análisis nutricional automático 📷</div>`;
     }
+  }
+
+  if (!html) {
+    html = `<div style="text-align:center;padding:32px 16px;color:var(--t2)">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div style="font-size:16px;font-weight:700;color:var(--t1);margin-bottom:8px">¡Comidas enviadas!</div>
+      <div style="font-size:13px;line-height:1.6">Tu entrenador recibió el reporte del día.<br>Agregá fotos a tus comidas para obtener el análisis nutricional automático 📷</div>
+    </div>`;
   }
 
   document.getElementById('nutrition-body').innerHTML = html;
@@ -2832,6 +2844,7 @@ async function confirmComplete() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'complete',
+        client: currentAthlete,
         day: currentDay,
         week: currentWeek,
         context: buildContext(),
