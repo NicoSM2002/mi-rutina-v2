@@ -216,6 +216,15 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
   box-shadow:0 2px 10px rgba(99,102,241,.4);
 }
 
+/* Session badge (athlete view) */
+.session-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.28);
+  border-radius:20px; padding:7px 18px;
+  font-size:13px; font-weight:700; color:var(--acl); letter-spacing:.3px;
+}
+.session-of-total { color:var(--t3); font-weight:500; }
+
 /* Day chips */
 .days-bar { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; }
 .days-bar::-webkit-scrollbar { display:none; }
@@ -1111,12 +1120,19 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
 .wu-photo { margin:4px 0 2px; }
 
 .rest-card {
-  margin:32px 0; background:var(--s1); border:1px solid var(--b);
-  border-radius:16px; padding:32px 20px; text-align:center;
+  margin:40px 20px; background:var(--s1); border:1px solid var(--b);
+  border-radius:20px; padding:44px 28px;
+  text-align:center; display:flex; flex-direction:column; align-items:center; gap:14px;
 }
-.rest-icon { font-size:48px; margin-bottom:12px; }
-.rest-title { font-size:20px; font-weight:800; color:var(--t1); margin-bottom:6px; }
-.rest-sub { font-size:13px; color:var(--t2); line-height:1.6; }
+.rest-emoji { font-size:52px; line-height:1; }
+.rest-title { font-size:22px; font-weight:800; color:var(--t1); letter-spacing:-.5px; }
+.rest-msg { font-size:15px; color:var(--t2); line-height:1.65; max-width:280px; }
+.rest-msg strong { color:var(--acl); }
+.rest-hint {
+  font-size:12px; color:var(--t3);
+  background:rgba(99,102,241,.1); border:1px solid rgba(99,102,241,.2);
+  border-radius:20px; padding:6px 16px; margin-top:4px;
+}
 </style>
 </head>
 <body>
@@ -1342,16 +1358,8 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
       <div class="r-title">Mi Rutina</div>
       <button class="chat-fab" onclick="openChat()" title="Preguntarle a Claude">🤖</button>
     </div>
-    <div class="week-seg">
-      <button class="week-seg-btn active" onclick="setWeek(1)">SEMANA 1</button>
-      <button class="week-seg-btn" onclick="setWeek(2)">SEMANA 2</button>
-    </div>
     <div class="days-bar" id="routine-days-bar">
-      <button class="day-chip active" data-day="lunes" onclick="setDay('lunes')">Lunes · Pecho</button>
-      <button class="day-chip" data-day="martes" onclick="setDay('martes')">Martes · Espalda</button>
-      <button class="day-chip" data-day="miercoles" onclick="setDay('miercoles')">Miércoles · Pierna</button>
-      <button class="day-chip" data-day="jueves" onclick="setDay('jueves')">Jueves · Hombros</button>
-      <button class="day-chip" data-day="viernes" onclick="setDay('viernes')">Viernes · Brazos</button>
+      <div class="session-badge">Sesión 1 <span class="session-of-total">de 5</span></div>
     </div>
   </div>
   <div class="r-content" id="content"></div>
@@ -1466,26 +1474,33 @@ function show(id) {
   document.getElementById(id).classList.add('active');
 }
 function showRoutine() {
-  const bar = document.getElementById('routine-days-bar');
-  if (currentAthlete === 'msaravia') {
-    currentDay = 'sesion1';
-    bar.innerHTML = `
-      <button class="day-chip active" data-day="sesion1" onclick="setDay('sesion1')">Sesión 1 · Inferior</button>
-      <button class="day-chip" data-day="sesion2" onclick="setDay('sesion2')">Sesión 2 · Hombros</button>
-      <button class="day-chip" data-day="sesion3" onclick="setDay('sesion3')">Sesión 3 · Cuádriceps</button>
-      <button class="day-chip" data-day="sesion4" onclick="setDay('sesion4')">Sesión 4 · Pecho</button>`;
-  } else {
-    currentDay = 'lunes';
-    bar.innerHTML = `
-      <button class="day-chip active" data-day="lunes" onclick="setDay('lunes')">Lunes · Pecho</button>
-      <button class="day-chip" data-day="martes" onclick="setDay('martes')">Martes · Espalda</button>
-      <button class="day-chip" data-day="miercoles" onclick="setDay('miercoles')">Miércoles · Pierna</button>
-      <button class="day-chip" data-day="jueves" onclick="setDay('jueves')">Jueves · Hombros</button>
-      <button class="day-chip" data-day="viernes" onclick="setDay('viernes')">Viernes · Brazos</button>`;
+  const state = getSessionState(currentAthlete);
+  const lastCompleted = localStorage.getItem('lastCompleted_' + currentAthlete);
+  const today = new Date().toDateString();
+
+  document.getElementById('routine-days-bar').innerHTML =
+    `<div class="session-badge">Sesión ${state.sessionNum} <span class="session-of-total">de ${state.total}</span></div>`;
+
+  if (lastCompleted === today) {
+    show('routine');
+    renderRestDay(state);
+    return;
   }
+
+  currentWeek = state.week;
+  currentDay  = state.sessionKey;
   routineStep = 0;
-  document.querySelectorAll('.week-seg-btn').forEach((b,i) => b.classList.toggle('active', i+1===currentWeek));
   show('routine'); render();
+}
+
+function renderRestDay(state) {
+  document.getElementById('content').innerHTML = `
+    <div class="rest-card">
+      <div class="rest-emoji">🎉</div>
+      <div class="rest-title">¡Sesión completada!</div>
+      <div class="rest-msg">Ya terminaste tu entrenamiento de hoy. Descansa bien — vuelve mañana para tu <strong>Sesión ${state.sessionNum}</strong>.</div>
+      <div class="rest-hint">Tu próxima sesión estará lista mañana.</div>
+    </div>`;
 }
 function showProfile()  { show(ATHLETE_USERS[currentAthlete === 'nicolas' ? 'nsaravia' : 'msaravia'].screen); }
 function showMeals()    { show('meals'); renderMeals(); }
@@ -1493,8 +1508,23 @@ window.addEventListener('load', () => { setTimeout(() => show('role-select'), 26
 
 /* ── state ── */
 let currentWeek  = 1;
-let currentDay   = 'lunes';
+let currentDay   = 'sesion1';
 let routineStep  = 0;
+
+/* ── session progression ── */
+function getSessionState(athlete) {
+  const fb = athlete === 'msaravia' ? FALLBACK_DATA_MSARAVIA : FALLBACK_DATA;
+  const total = Object.keys(fb).length;
+  const idx   = parseInt(localStorage.getItem('sessionIdx_' + athlete) || '0');
+  const week  = (Math.floor(idx / total) % 2) + 1;
+  const num   = (idx % total) + 1;
+  return { idx, total, week, sessionNum: num, sessionKey: 'sesion' + num };
+}
+function advanceSession(athlete) {
+  const idx = parseInt(localStorage.getItem('sessionIdx_' + athlete) || '0');
+  localStorage.setItem('sessionIdx_' + athlete, idx + 1);
+  localStorage.setItem('lastCompleted_' + athlete, new Date().toDateString());
+}
 
 const MUSC = {
   pecho:'mb-pecho', espalda:'mb-espalda', triceps:'mb-triceps',
@@ -1503,7 +1533,7 @@ const MUSC = {
 };
 
 const FALLBACK_DATA = {
-  lunes: {
+  sesion1: {
     title:'Pecho & Bíceps',
     sub:'S1: Smith + poleas · S2: Mancuernas libres + variación de curl',
     warmupHombro:[
@@ -1579,7 +1609,7 @@ const FALLBACK_DATA = {
     ],
     nota:'S1: el Smith inclinado al inicio cuando estás fresco es clave — pecho alto. S2: press barra plano con carga máxima en C2. Los fondos de pecho en C3 semana 2 son duros — controla el descenso.'
   },
-  martes: {
+  sesion2: {
     title:'Espalda & Tríceps',
     sub:'S1: jalón ancho + remo cable · S2: agarre neutro + remo T-bar',
     warmupHombro:[
@@ -1655,7 +1685,7 @@ const FALLBACK_DATA = {
     ],
     nota:'S1 prioriza el jalón ancho — es tu ejercicio de anchura principal. S2: el remo Pendlay barra requiere técnica estricta (reset en el suelo). La extensión de tríceps sobre cabeza (S2 C2) carga la cabeza larga en posición elongada — muy efectiva para masa.'
   },
-  miercoles: {
+  sesion3: {
     title:'Pierna',
     sub:'S1: barra + prensa · S2: goblet + búlgara + curl sentado (posición elongada)',
     warmup:[
@@ -1726,7 +1756,7 @@ const FALLBACK_DATA = {
     ],
     nota:'S1 es el clásico de carga pesada. S2 introduce la búlgara — uno de los mejores ejercicios para cuádriceps según la investigación actual. El curl femoral SENTADO (S2) activa más los isquiotibiales por la posición elongada. Dale intensidad real a la pierna.'
   },
-  jueves: {
+  sesion4: {
     title:'Hombros',
     sub:'S1: mancuernas + face pull · S2: barra + cables con tensión constante',
     warmupHombro:[
@@ -1802,7 +1832,7 @@ const FALLBACK_DATA = {
     ],
     nota:'El deltoides posterior es clave para la anchura visual. S2: la elevación lateral en cable (C1) mantiene tensión incluso abajo — pruébala. El press landmine (S2 C2) es muy amigable para el hombro y permite cargar bien.'
   },
-  viernes: {
+  sesion5: {
     title:'Brazo Completo',
     sub:'S1: barra + cerrado · S2: EZ + variaciones cabeza larga / posición elongada',
     warmupHombro:[
@@ -2423,7 +2453,7 @@ let trainerClientId = null;
 let trainerData = { completions:[], meals:[] };
 let activeTrainerTab = 'rutinas';
 let editorData = null;
-let editorDay = 'lunes';
+let editorDay = 'sesion1';
 let editorWeek = 1;
 let editorPickerTarget = null;
 let _pickerCatalog = [];
@@ -2453,7 +2483,7 @@ async function openTrainerClient(clientId, clientName) {
   document.getElementById('tab-editar').classList.remove('active');
   const edFb = clientId === 'msaravia' ? FALLBACK_DATA_MSARAVIA : FALLBACK_DATA;
   editorData = JSON.parse(JSON.stringify(edFb));
-  editorDay = clientId === 'msaravia' ? 'sesion1' : 'lunes';
+  editorDay = 'sesion1';
   editorWeek = 1;
   show('trainer-client');
 
@@ -2802,8 +2832,8 @@ function closeNutrition() {
 
 /* ── complete ── */
 const DAY_NAMES = {
-  lunes:'Lunes — Pecho & Bíceps', martes:'Martes — Espalda & Tríceps',
-  miercoles:'Miércoles — Pierna', jueves:'Jueves — Hombros', viernes:'Viernes — Brazo Completo'
+  sesion1:'Sesión 1', sesion2:'Sesión 2', sesion3:'Sesión 3',
+  sesion4:'Sesión 4', sesion5:'Sesión 5'
 };
 
 function openComplete() {
@@ -2857,6 +2887,7 @@ async function confirmComplete() {
     if (data.ok) {
       btn.textContent = '✅ ¡Enviado!';
       launchConfetti();
+      advanceSession(currentAthlete);
       setTimeout(() => closeComplete(), 2500);
     } else {
       btn.textContent = 'Error, intentá de nuevo';
@@ -3062,13 +3093,12 @@ function renderRoutineEditor() {
   if (!editorData) editorData = JSON.parse(JSON.stringify(data));
   const day = editorData[editorDay];
   const w = editorWeek;
-  const isSessions = trainerClientId === 'msaravia';
-  const days = isSessions
+  const days = trainerClientId === 'msaravia'
     ? ['sesion1','sesion2','sesion3','sesion4']
-    : ['lunes','martes','miercoles','jueves','viernes'];
-  const dayLabels = isSessions
+    : ['sesion1','sesion2','sesion3','sesion4','sesion5'];
+  const dayLabels = trainerClientId === 'msaravia'
     ? { sesion1:'S1', sesion2:'S2', sesion3:'S3', sesion4:'S4' }
-    : { lunes:'Lun', martes:'Mar', miercoles:'Mié', jueves:'Jue', viernes:'Vie' };
+    : { sesion1:'S1', sesion2:'S2', sesion3:'S3', sesion4:'S4', sesion5:'S5' };
 
   // Week selector
   let html = `<div class="week-seg" style="margin-bottom:14px">
