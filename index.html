@@ -560,16 +560,6 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 .chat-send:disabled { opacity:.4; cursor:default; }
 
 /* ── SUPPORT CHAT ── */
-.support-fab {
-  position:fixed; bottom:calc(20px + var(--sab)); right:20px; z-index:90;
-  width:48px; height:48px; border-radius:14px; border:none; cursor:pointer;
-  background:linear-gradient(135deg, #6366f1, #818cf8);
-  display:none; align-items:center; justify-content:center;
-  font-size:22px; box-shadow:0 4px 20px rgba(99,102,241,.4);
-  transition:transform .15s, box-shadow .15s;
-}
-.support-fab:active { transform:scale(.92); }
-
 .support-overlay {
   position:fixed; inset:0; z-index:260;
   background:rgba(10,11,20,.8);
@@ -1406,9 +1396,6 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
     position: absolute;
     bottom: 0; left: 0; right: 0;
   }
-  #app-shell .support-fab {
-    position: absolute;
-  }
   #app-shell .support-overlay,
   #app-shell #admin-chat-overlay {
     position: absolute;
@@ -1548,6 +1535,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
   <div class="tclient-header">
     <div class="tclient-header-top">
       <div class="tclient-name" id="tclient-name">Nicolás Saravia</div>
+      <button class="chat-fab" onclick="openSupportChat()" title="Soporte" style="background:linear-gradient(135deg,#6366f1,#818cf8)">💬</button>
     </div>
     <div class="tclient-tabs">
       <button class="tclient-tab active" id="tab-rutinas" onclick="setTrainerTab('rutinas')">💪 Rutinas</button>
@@ -3881,9 +3869,6 @@ show = function(id) {
   _origShow(id);
   const nav = document.getElementById('bottom-nav');
   const tnav = document.getElementById('trainer-bottom-nav');
-  const sfab = document.getElementById('support-fab');
-  const isTrainer = id === 'trainer-portal' || id === 'trainer-client';
-  sfab.style.display = isTrainer ? 'flex' : 'none';
   if (ATHLETE_SCREENS.includes(id)) {
     nav.style.display = 'flex';
     tnav.style.display = 'none';
@@ -3923,6 +3908,9 @@ function adminLogin() {
 
 function openSupportChat() {
   document.getElementById('support-overlay').classList.add('show');
+  // Update header with current client context
+  const clientName = document.getElementById('tclient-name').textContent;
+  document.querySelector('.support-sheet .chat-sub').textContent = 'Atleta: ' + clientName;
   loadSupportMessages();
   supportPollId = setInterval(loadSupportMessages, 8000);
 }
@@ -3951,7 +3939,8 @@ function renderSupportMessages(msgs) {
   }
   el.innerHTML = msgs.map(m => {
     const time = new Date(m.ts).toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
-    return `<div class="support-msg ${m.role}"><div>${m.text}</div><div class="support-msg-time">${time}</div></div>`;
+    const displayText = m.role === 'trainer' ? m.text.replace(/^\[.*?\]\s*/, '') : m.text;
+    return `<div class="support-msg ${m.role}"><div>${displayText}</div><div class="support-msg-time">${time}</div></div>`;
   }).join('');
   el.scrollTop = el.scrollHeight;
 }
@@ -3961,6 +3950,8 @@ async function sendSupportMsg() {
   const text = input.value.trim();
   if (!text) return;
   input.value = '';
+  const clientName = document.getElementById('tclient-name').textContent;
+  const fullText = `[${clientName}] ${text}`;
   // Append locally
   const el = document.getElementById('support-messages');
   const time = new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
@@ -3969,7 +3960,7 @@ async function sendSupportMsg() {
   try {
     await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'send-support-msg', trainerId: currentTrainerId, role:'trainer', text })
+      body: JSON.stringify({ action:'send-support-msg', trainerId: currentTrainerId, role:'trainer', text: fullText, clientId: trainerClientId })
     });
   } catch(e) {}
 }
@@ -4065,9 +4056,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
 }
 </script>
-<!-- ══ SUPPORT FAB ══ -->
-<button class="support-fab" id="support-fab" onclick="openSupportChat()">💬</button>
-
 <!-- ══ SUPPORT CHAT OVERLAY ══ -->
 <div class="support-overlay" id="support-overlay">
   <div class="support-sheet">
