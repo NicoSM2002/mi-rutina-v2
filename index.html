@@ -1378,6 +1378,15 @@ html, body { height:100%; overflow:hidden; font-family:'Inter',sans-serif; backg
   .expicker-header { border-radius: 20px 20px 0 0; background: var(--s1); }
   .expicker-list   { border-radius: 0 0 20px 20px; background: var(--s1); }
 
+  /* ── Routine editor: circuits in columns ── */
+  .re-circuits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .re-circuit-card { margin-bottom: 0; }
+
   /* ── Larger click targets & better card sizing ── */
   .back-btn { padding: 10px 18px; font-size: 14px; }
   .r-title { font-size: 20px; }
@@ -3585,6 +3594,7 @@ function renderRoutineEditor() {
   html += `</div>`;
 
   // Circuits
+  html += `<div class="re-circuits-grid">`;
   day.circuits.forEach((circuit, ci) => {
     html += `<div class="re-circuit-card ${circuit.cls}"><div class="re-circuit-hdr">${circuit.label}</div>`;
     circuit.exercises.forEach((ex, ei) => {
@@ -3632,6 +3642,7 @@ function renderRoutineEditor() {
     });
     html += `</div>`;
   });
+  html += `</div>`; // re-circuits-grid
 
   html += `<div class="section-label" style="margin-top:16px;margin-bottom:6px">Nota del entrenador</div>
     <textarea class="re-nota" rows="3" oninput="updateEditorNota('${editorDay}',this.value)">${day.nota||''}</textarea>
