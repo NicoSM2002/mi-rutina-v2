@@ -695,7 +695,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 .payment-paid-msg { text-align:center; color:#34d399; font-size:13px; font-weight:600; padding:6px 0; }
 
 /* trainer payment tab */
-.tpay-section { margin-bottom:20px; }
+.tpay-section { margin-bottom:20px; overflow:hidden; }
 .tpay-status-row { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
 .tpay-amount-big { font-size:32px; font-weight:800; color:var(--t1); }
 .tpay-toggle-btn {
@@ -710,7 +710,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 .tpay-input {
   width:100%; max-width:100%; background:var(--s2); border:1px solid var(--b); border-radius:10px;
   padding:11px 14px; color:var(--t1); font-family:var(--font-b),sans-serif;
-  font-size:14px; box-sizing:border-box;
+  font-size:14px; box-sizing:border-box; -webkit-appearance:none; appearance:none;
 }
 .tpay-save-btn {
   width:100%; padding:15px; border:none; border-radius:14px;
@@ -1143,7 +1143,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 /* ── EXERCISE PICKER ── */
 .expicker-overlay { position:fixed; inset:0; z-index:350; background:var(--bg); display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .2s; overflow:hidden; }
 .expicker-overlay.show { opacity:1; pointer-events:all; }
-.expicker-header { padding:calc(var(--sat)+16px) 20px 12px; border-bottom:1px solid var(--b); flex-shrink:0; margin:0; }
+.expicker-header { padding:calc(var(--sat)+20px) 20px 14px; border-bottom:1px solid var(--b); flex-shrink:0; }
 .expicker-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .expicker-title { font-family:var(--font-d); font-size:16px; font-weight:700; color:var(--t1); }
 .expicker-close { width:32px; height:32px; border-radius:8px; border:none; background:var(--b); color:var(--t2); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
