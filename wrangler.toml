@@ -17,4 +17,4 @@ bucket_name = "mi-rutina-fotos"
 
 # Daily meal report at 10 PM Colombia (03:00 UTC)
 [triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "0 15 * * 6"]
