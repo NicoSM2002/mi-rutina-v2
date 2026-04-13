@@ -2954,6 +2954,7 @@ let resumenWeekOf = null;
 
 async function showResumen(weekOf) {
   show('resumen');
+  document.getElementById('bottom-nav').style.display = 'flex';
   const nav = document.getElementById('resumen-week-nav');
   const content = document.getElementById('resumen-content');
   nav.innerHTML = '';
