@@ -204,44 +204,7 @@ export default {
       if (records.length > 200) records = records.slice(0, 200);
       await env.DB.put(kvKey, JSON.stringify(records));
 
-      // Email for this slot
-      const slotMeta = MEAL_SLOTS.find(s => s.key === slot);
-      const slotText = body.meals?.[slot];
-      const slotPhoto = body.photos?.[slot];
-      const slotHtml = `
-        <tr><td bgcolor="#1e2130" style="background:#1e2130;border:1px solid #2d3148;border-radius:12px;padding:20px">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#94a3b8;text-transform:uppercase;margin-bottom:12px">${slotMeta?.icon || ''} ${slotMeta?.label || slot}</div>
-          ${slotText  ? `<p style="margin:0 0 12px;font-size:14px;color:#e2e8f0;line-height:1.5">${slotText}</p>` : ''}
-          ${slotPhoto ? `<img src="${slotPhoto}" style="width:100%;max-width:400px;border-radius:10px;display:block;margin-bottom:12px">` : ''}
-          ${analysis  ? `<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f1117" style="background:#0f1117;border-left:3px solid #06b6d4;border-radius:0 8px 8px 0"><tr><td style="padding:14px 16px"><div style="font-size:11px;font-weight:700;color:#06b6d4;letter-spacing:1px;margin-bottom:10px">🤖 ANÁLISIS NUTRICIONAL</div><div style="font-size:13px;line-height:1.8;color:#cbd5e1;white-space:pre-line">${analysis}</div></td></tr></table>` : ''}
-        </td></tr>`;
-
-      const emailHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0" bgcolor="#0f1117">
-<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f1117" style="background:#0f1117;font-family:-apple-system,Helvetica,sans-serif">
-  <tr><td align="center" style="padding:24px 16px">
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
-      <tr><td style="background:linear-gradient(135deg,#06b6d4,#6366f1);border-radius:16px;padding:24px">
-        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:6px">Comida registrada</div>
-        <div style="font-size:28px;font-weight:800;color:#fff">🍽️ ${slotMeta?.label || slot}</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">${body.dayLabel} · ${athleteName}</div>
-      </td></tr>
-      <tr><td height="20"></td></tr>
-      ${slotHtml}
-    </table>
-  </td></tr>
-</table></body></html>`;
-
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: 'Mi Rutina <onboarding@resend.dev>',
-          to: TRAINER_EMAIL,
-          subject: `🍽️ ${athleteName} — ${slotMeta?.label || slot} (${body.dayLabel})`,
-          html: emailHtml
-        })
-      });
+      // No email per meal — daily report sent at 10 PM via cron
 
       return new Response(JSON.stringify({ ok: true, analysis }), { headers: cors });
     }
@@ -377,5 +340,129 @@ export default {
       content,
       _error: !content ? (claudeData.error?.message || claudeData.type || 'empty') : null
     }), { headers: cors });
+  },
+
+  // ── CRON: Daily meal report at 10 PM Colombia (03:00 UTC) ──
+  async scheduled(event, env, ctx) {
+    const ATHLETES = {
+      nicolas:  { name: 'Nicolás Saravia' },
+      msaravia: { name: 'María Saravia'   },
+    };
+    const TRAINER_EMAIL = 'nicolas@drakeconstruction.com';
+    const MEAL_SLOTS = [
+      { key: 'desayuno',     label: 'Desayuno',      icon: '☀️' },
+      { key: 'mediasNueves', label: 'Medias nueves',  icon: '🍎' },
+      { key: 'almuerzo',     label: 'Almuerzo',       icon: '🍽️' },
+      { key: 'onces',        label: 'Onces',          icon: '☕' },
+      { key: 'comida',       label: 'Cena',           icon: '🌙' }
+    ];
+
+    // Today's date key (Colombia timezone)
+    const now = new Date();
+    const coDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
+    const todayKey = `${coDate.getFullYear()}-${String(coDate.getMonth()+1).padStart(2,'0')}-${String(coDate.getDate()).padStart(2,'0')}`;
+    const dayLabel = coDate.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    for (const [clientId, athlete] of Object.entries(ATHLETES)) {
+      const records = await env.DB.get(`meals:${clientId}`, 'json') || [];
+      const todayRecord = records.find(r => r.day === todayKey);
+
+      if (!todayRecord) continue; // No meals today for this athlete
+
+      // Build slots that have content
+      const filledSlots = MEAL_SLOTS.filter(s =>
+        todayRecord.meals?.[s.key] || todayRecord.photos?.[s.key]
+      );
+
+      if (filledSlots.length === 0) continue; // No actual meals
+
+      // Build email HTML for each filled slot
+      let slotsHtml = '';
+      let totalSummary = { cals: 0, prot: 0, carbs: 0, fat: 0, count: 0 };
+
+      for (const slot of filledSlots) {
+        const text = todayRecord.meals?.[slot.key] || '';
+        const photo = todayRecord.photos?.[slot.key] || '';
+        const analysis = todayRecord.analyses?.[slot.key] || '';
+
+        // Try to extract macros from analysis for totals
+        if (analysis) {
+          const calMatch = analysis.match(/CALOR[ÍI]AS:\s*~?(\d+)/i);
+          const protMatch = analysis.match(/PROTE[ÍI]NA:\s*~?(\d+)/i);
+          const carbMatch = analysis.match(/CARBOS:\s*~?(\d+)/i);
+          const fatMatch = analysis.match(/GRASAS:\s*~?(\d+)/i);
+          if (calMatch) { totalSummary.cals += parseInt(calMatch[1]); totalSummary.count++; }
+          if (protMatch) totalSummary.prot += parseInt(protMatch[1]);
+          if (carbMatch) totalSummary.carbs += parseInt(carbMatch[1]);
+          if (fatMatch) totalSummary.fat += parseInt(fatMatch[1]);
+        }
+
+        slotsHtml += `
+          <tr><td height="16"></td></tr>
+          <tr><td bgcolor="#1e2130" style="background:#1e2130;border:1px solid #2d3148;border-radius:12px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#94a3b8;text-transform:uppercase;margin-bottom:12px">${slot.icon} ${slot.label}</div>
+            ${text  ? `<p style="margin:0 0 12px;font-size:14px;color:#e2e8f0;line-height:1.5">${text}</p>` : ''}
+            ${photo ? `<img src="${photo}" style="width:100%;max-width:400px;border-radius:10px;display:block;margin-bottom:12px">` : ''}
+            ${analysis ? `<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f1117" style="background:#0f1117;border-left:3px solid #06b6d4;border-radius:0 8px 8px 0"><tr><td style="padding:14px 16px"><div style="font-size:11px;font-weight:700;color:#06b6d4;letter-spacing:1px;margin-bottom:10px">🤖 ANÁLISIS NUTRICIONAL</div><div style="font-size:13px;line-height:1.8;color:#cbd5e1;white-space:pre-line">${analysis}</div></td></tr></table>` : ''}
+          </td></tr>`;
+      }
+
+      // Daily totals row (if we have any analyzed meals)
+      let totalsHtml = '';
+      if (totalSummary.count > 0) {
+        totalsHtml = `
+          <tr><td height="16"></td></tr>
+          <tr><td bgcolor="#0f1117" style="background:#0f1117;border:2px solid #06b6d4;border-radius:12px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#06b6d4;text-transform:uppercase;margin-bottom:16px">📊 TOTALES DEL DÍA (${totalSummary.count} comida${totalSummary.count > 1 ? 's' : ''} analizadas)</div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="25%" style="text-align:center;padding:8px">
+                  <div style="font-size:24px;font-weight:800;color:#f59e0b">~${totalSummary.cals}</div>
+                  <div style="font-size:10px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.8px">kcal</div>
+                </td>
+                <td width="25%" style="text-align:center;padding:8px">
+                  <div style="font-size:24px;font-weight:800;color:#34d399">~${totalSummary.prot}g</div>
+                  <div style="font-size:10px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.8px">proteína</div>
+                </td>
+                <td width="25%" style="text-align:center;padding:8px">
+                  <div style="font-size:24px;font-weight:800;color:#818cf8">~${totalSummary.carbs}g</div>
+                  <div style="font-size:10px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.8px">carbos</div>
+                </td>
+                <td width="25%" style="text-align:center;padding:8px">
+                  <div style="font-size:24px;font-weight:800;color:#f87171">~${totalSummary.fat}g</div>
+                  <div style="font-size:10px;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.8px">grasas</div>
+                </td>
+              </tr>
+            </table>
+          </td></tr>`;
+      }
+
+      const emailHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0" bgcolor="#0f1117">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f1117" style="background:#0f1117;font-family:-apple-system,Helvetica,sans-serif">
+  <tr><td align="center" style="padding:24px 16px">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
+      <tr><td style="background:linear-gradient(135deg,#06b6d4,#6366f1);border-radius:16px;padding:24px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:6px">Reporte diario de comidas</div>
+        <div style="font-size:28px;font-weight:800;color:#fff">🍽️ ${athlete.name}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">${dayLabel} · ${filledSlots.length} de ${MEAL_SLOTS.length} comidas registradas</div>
+      </td></tr>
+      ${totalsHtml}
+      ${slotsHtml}
+    </table>
+  </td></tr>
+</table></body></html>`;
+
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Mi Rutina <onboarding@resend.dev>',
+          to: TRAINER_EMAIL,
+          subject: `🍽️ Reporte diario — ${athlete.name} (${filledSlots.length}/${MEAL_SLOTS.length} comidas)`,
+          html: emailHtml
+        })
+      });
+    }
   }
 };
