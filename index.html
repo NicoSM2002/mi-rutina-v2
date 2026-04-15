@@ -1166,6 +1166,13 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 .re-input { width:100%; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:9px 10px; color:var(--t1); font-family:var(--font-d); font-size:15px; font-weight:700; outline:none; -webkit-appearance:none; text-align:center; }
 .re-input:focus { border-color:var(--ac); }
 .re-input-label { font-family:var(--font-d); font-size:10px; color:var(--t2); text-align:center; margin-top:4px; }
+.re-combo { display:flex; align-items:stretch; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:10px; overflow:hidden; }
+.re-combo:focus-within { border-color:var(--ac); }
+.re-combo input { flex:1; min-width:0; background:transparent; border:none; padding:9px 6px 9px 10px; color:var(--t1); font-family:var(--font-d); font-size:15px; font-weight:700; outline:none; -webkit-appearance:none; text-align:right; }
+.re-combo input::-webkit-outer-spin-button, .re-combo input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.re-combo input[type=number] { -moz-appearance:textfield; }
+.re-unit-select { background:rgba(255,255,255,.04); border:none; border-left:1px solid rgba(255,255,255,.08); padding:0 8px; color:var(--ac); font-family:var(--font-d); font-size:13px; font-weight:700; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none; text-align:center; }
+.re-unit-fixed { display:flex; align-items:center; padding:0 10px; background:rgba(255,255,255,.04); border-left:1px solid rgba(255,255,255,.08); color:var(--t2); font-family:var(--font-d); font-size:13px; font-weight:700; }
 .re-nota { width:100%; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:12px 14px; color:var(--t1); font-family:var(--font-b); font-size:14px; outline:none; resize:none; -webkit-appearance:none; margin-top:8px; font-size:16px; }
 .re-save-btn { width:100%; padding:16px; background:linear-gradient(135deg,#FF6B2C,#FF8F5E); border:none; border-radius:14px; font-family:var(--font-d); font-size:16px; font-weight:700; color:#fff; cursor:pointer; margin-top:14px; }
 .re-save-btn:active { opacity:.85; }
@@ -3923,10 +3930,27 @@ function renderRoutineEditor() {
       const renderSteps = () => {
         let s = `<div class="re-steps">`;
         steps.forEach((step, si) => {
+          const pw = parseWeight(step.w);
+          const pr = parseReps(step.reps);
           s += `<div class="re-step-row">
             <span class="re-step-num">${si+1}</span>
-            <div class="re-wr-col"><input class="re-input" value="${step.w||''}" oninput="updateStep('${editorDay}',${ci},${ei},1,${si},'w',this.value)" placeholder="Peso"><div class="re-input-label">Peso</div></div>
-            <div class="re-wr-col"><input class="re-input" value="${step.reps||''}" oninput="updateStep('${editorDay}',${ci},${ei},1,${si},'reps',this.value)" placeholder="Reps"><div class="re-input-label">Reps</div></div>
+            <div class="re-wr-col">
+              <div class="re-combo">
+                <input type="number" inputmode="decimal" value="${pw.num}" placeholder="0" oninput="updateStepWeightNum('${editorDay}',${ci},${ei},1,${si},this.value)">
+                <select class="re-unit-select" onchange="updateStepWeightUnit('${editorDay}',${ci},${ei},1,${si},this.value)">
+                  <option value="lbs"${pw.unit==='lbs'?' selected':''}>lbs</option>
+                  <option value="kg"${pw.unit==='kg'?' selected':''}>kg</option>
+                </select>
+              </div>
+              <div class="re-input-label">Peso</div>
+            </div>
+            <div class="re-wr-col">
+              <div class="re-combo">
+                <input type="number" inputmode="numeric" value="${pr}" placeholder="0" oninput="updateStepRepsNum('${editorDay}',${ci},${ei},1,${si},this.value)">
+                <span class="re-unit-fixed">reps</span>
+              </div>
+              <div class="re-input-label">Reps</div>
+            </div>
             <button class="re-step-del" onclick="removeStep('${editorDay}',${ci},${ei},1,${si})">×</button>
           </div>`;
         });
@@ -3945,10 +3969,29 @@ function renderRoutineEditor() {
           <button class="re-change-btn" onclick="openExercisePicker(${ci},${ei},1)">Cambiar</button>
         </div>
         ${st === 'normal'
-          ? `<div class="re-wr-row">
-              <div class="re-wr-col"><input class="re-input" value="${exW}" oninput="updateEditorField('${editorDay}',${ci},${ei},'${wField}',this.value)" placeholder="Peso"><div class="re-input-label">Peso</div></div>
-              <div class="re-wr-col"><input class="re-input" value="${exReps}" oninput="updateEditorField('${editorDay}',${ci},${ei},'${rField}',this.value)" placeholder="Reps"><div class="re-input-label">Reps</div></div>
-            </div>`
+          ? (() => {
+              const pw = parseWeight(exW);
+              const pr = parseReps(exReps);
+              return `<div class="re-wr-row">
+                <div class="re-wr-col">
+                  <div class="re-combo">
+                    <input type="number" inputmode="decimal" value="${pw.num}" placeholder="0" oninput="updateEditorWeightNum('${editorDay}',${ci},${ei},'${wField}',this.value)">
+                    <select class="re-unit-select" onchange="updateEditorWeightUnit('${editorDay}',${ci},${ei},'${wField}',this.value)">
+                      <option value="lbs"${pw.unit==='lbs'?' selected':''}>lbs</option>
+                      <option value="kg"${pw.unit==='kg'?' selected':''}>kg</option>
+                    </select>
+                  </div>
+                  <div class="re-input-label">Peso</div>
+                </div>
+                <div class="re-wr-col">
+                  <div class="re-combo">
+                    <input type="number" inputmode="numeric" value="${pr}" placeholder="0" oninput="updateEditorRepsNum('${editorDay}',${ci},${ei},'${rField}',this.value)">
+                    <span class="re-unit-fixed">reps</span>
+                  </div>
+                  <div class="re-input-label">Reps</div>
+                </div>
+              </div>`;
+            })()
           : renderSteps()
         }
       </div>`;
@@ -3987,6 +4030,65 @@ function setSetType(day, ci, ei, type) {
 function updateStep(day, ci, ei, week, si, field, value) {
   const key = week === 1 ? 'steps1' : 'steps2';
   editorData[day].circuits[ci].exercises[ei][key][si][field] = value;
+}
+
+function parseWeight(s) {
+  if (!s) return { num: '', unit: 'lbs' };
+  const str = String(s).trim();
+  const m = str.match(/(\d+(?:[.,]\d+)?)\s*(kg|kilos?|lbs?|libras?)?/i);
+  if (!m) return { num: '', unit: /kg|kilos?/i.test(str) ? 'kg' : 'lbs' };
+  const unitRaw = (m[2] || '').toLowerCase();
+  const unit = unitRaw.startsWith('k') ? 'kg' : 'lbs';
+  return { num: m[1].replace(',', '.'), unit };
+}
+
+function parseReps(s) {
+  if (!s) return '';
+  const m = String(s).match(/(\d+)/);
+  return m ? m[1] : '';
+}
+
+function formatWeight(num, unit) {
+  return num ? `${num} ${unit}` : '';
+}
+
+function formatReps(num) {
+  return num ? `${num} reps` : '';
+}
+
+function updateEditorWeightNum(day, ci, ei, field, num) {
+  const ex = editorData[day].circuits[ci].exercises[ei];
+  const { unit } = parseWeight(ex[field] || '');
+  ex[field] = formatWeight(num, unit);
+}
+
+function updateEditorWeightUnit(day, ci, ei, field, unit) {
+  const ex = editorData[day].circuits[ci].exercises[ei];
+  const { num } = parseWeight(ex[field] || '');
+  ex[field] = formatWeight(num, unit);
+}
+
+function updateEditorRepsNum(day, ci, ei, field, num) {
+  editorData[day].circuits[ci].exercises[ei][field] = formatReps(num);
+}
+
+function updateStepWeightNum(day, ci, ei, week, si, num) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  const step = editorData[day].circuits[ci].exercises[ei][key][si];
+  const { unit } = parseWeight(step.w || '');
+  step.w = formatWeight(num, unit);
+}
+
+function updateStepWeightUnit(day, ci, ei, week, si, unit) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  const step = editorData[day].circuits[ci].exercises[ei][key][si];
+  const { num } = parseWeight(step.w || '');
+  step.w = formatWeight(num, unit);
+}
+
+function updateStepRepsNum(day, ci, ei, week, si, num) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  editorData[day].circuits[ci].exercises[ei][key][si].reps = formatReps(num);
 }
 
 function addStep(day, ci, ei, week) {
