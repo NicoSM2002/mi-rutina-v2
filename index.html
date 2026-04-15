@@ -4419,33 +4419,22 @@ function renderRoutineEditor() {
   }
   html += `</div>`;
 
-  // Warmup editor
-  const hasHombro = Array.isArray(day.warmupHombro) && day.warmupHombro.length > 0;
-  html += `<div class="re-warmup-card">`;
-  if (hasHombro) {
-    html += `<div class="re-wu-title">🔥 Calentamiento hombro</div>`;
-    day.warmupHombro.forEach((it, wi) => {
-      const text = typeof it === 'string' ? it : (it && it.text) || '';
-      html += `<div class="re-wu-row">
-        <input type="text" value="${reEscAttr(text)}" oninput="updateWarmupText('${editorDay}','warmupHombro',${wi},this.value)" placeholder="Ejercicio de calentamiento">
-        <button class="re-del-btn" onclick="removeWarmupItem('${editorDay}','warmupHombro',${wi})" title="Quitar">×</button>
-      </div>`;
-    });
-    html += `<button class="re-add-btn re-wu-add" onclick="addWarmupItem('${editorDay}','warmupHombro')">+ Agregar ejercicio de hombro</button>`;
-    html += `<hr style="border:none;border-top:1px solid rgba(255,255,255,.05);margin:14px 0">`;
+  // Migrate legacy warmupHombro → warmup (one single list going forward)
+  if (Array.isArray(day.warmupHombro) && day.warmupHombro.length) {
+    day.warmup = [...(day.warmupHombro || []), ...(day.warmup || [])];
+    day.warmupHombro = [];
   }
+  // Warmup editor (single list, picker-based)
+  html += `<div class="re-warmup-card">`;
   html += `<div class="re-wu-title">🔥 Calentamiento del día</div>`;
   (day.warmup || []).forEach((it, wi) => {
-    const text = typeof it === 'string' ? it : (it && it.text) || '';
+    const name = typeof it === 'string' ? it : (it && (it.text || it.name)) || '';
     html += `<div class="re-wu-row">
-      <input type="text" value="${reEscAttr(text)}" oninput="updateWarmupText('${editorDay}','warmup',${wi},this.value)" placeholder="Ejercicio de calentamiento">
+      <button class="re-name-btn" style="flex:1;text-align:left" onclick="openWarmupPicker(${wi})">${reEscAttr(name) || 'Elegir ejercicio…'}</button>
       <button class="re-del-btn" onclick="removeWarmupItem('${editorDay}','warmup',${wi})" title="Quitar">×</button>
     </div>`;
   });
-  html += `<button class="re-add-btn re-wu-add" onclick="addWarmupItem('${editorDay}','warmup')">+ Agregar calentamiento</button>`;
-  if (!hasHombro) {
-    html += `<button class="re-add-btn re-wu-add" onclick="addWarmupItem('${editorDay}','warmupHombro')" style="margin-top:6px">+ Agregar calentamiento de hombro</button>`;
-  }
+  html += `<button class="re-add-btn re-wu-add" onclick="addWarmupPicker()">+ Agregar calentamiento</button>`;
   html += `</div>`;
 
   // Circuits
@@ -4800,13 +4789,35 @@ function renderPickerList(query) {
 
 function selectExerciseByIdx(idx) {
   const ex = _pickerCatalog[idx];
-  const { day, ci, ei } = editorPickerTarget;
-  editorData[day].circuits[ci].exercises[ei].name = ex.name;
-  editorData[day].circuits[ci].exercises[ei].img = ex.img;
-  editorData[day].circuits[ci].exercises[ei].tip = ex.tip;
-  editorData[day].circuits[ci].exercises[ei].muscle = ex.muscle;
+  const t = editorPickerTarget;
+  if (t.kind === 'warmup') {
+    if (!Array.isArray(editorData[t.day].warmup)) editorData[t.day].warmup = [];
+    if (t.wi === -1) {
+      editorData[t.day].warmup.push({ text: ex.name, name: ex.name, img: ex.img, muscle: ex.muscle });
+    } else {
+      const cur = editorData[t.day].warmup[t.wi] || {};
+      editorData[t.day].warmup[t.wi] = { ...cur, text: ex.name, name: ex.name, img: ex.img, muscle: ex.muscle };
+    }
+  } else {
+    const { day, ci, ei } = t;
+    editorData[day].circuits[ci].exercises[ei].name = ex.name;
+    editorData[day].circuits[ci].exercises[ei].img = ex.img;
+    editorData[day].circuits[ci].exercises[ei].tip = ex.tip;
+    editorData[day].circuits[ci].exercises[ei].muscle = ex.muscle;
+  }
   closeExercisePicker();
   renderRoutineEditor();
+}
+
+function openWarmupPicker(wi) {
+  editorPickerTarget = { day: editorDay, kind: 'warmup', wi };
+  renderPickerList('');
+  document.getElementById('expicker-search').value = '';
+  document.getElementById('expicker-overlay').classList.add('show');
+}
+
+function addWarmupPicker() {
+  openWarmupPicker(-1);
 }
 
 async function saveRoutineFromEditor() {
@@ -4819,6 +4830,7 @@ async function saveRoutineFromEditor() {
     });
     const json = await res.json();
     if (json.ok) {
+      if (json.routine) editorData = json.routine;
       data = JSON.parse(JSON.stringify(editorData));
       btn.textContent = '✅ Guardado';
       setTimeout(() => { btn.disabled=false; btn.textContent='Guardar rutina'; }, 2000);

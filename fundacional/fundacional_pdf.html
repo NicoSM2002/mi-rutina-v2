@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Rutina App — Documento Fundacional</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap');
+
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 210mm; }
+
+  :root {
+    --dark-bg: #0f0f1a;
+    --card-bg: #1a1a2e;
+    --card-bg2: #16213e;
+    --accent-green: #00d4aa;
+    --accent-blue: #6366f1;
+    --accent-violet: #818cf8;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b8;
+    --text-muted: #6b6b80;
+    --gradient-main: linear-gradient(135deg, #6366f1, #00d4aa);
+    --gradient-card: linear-gradient(135deg, #1a1a2e, #16213e);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--dark-bg);
+    color: var(--text-primary);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Each page is exactly A4 */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    margin: 0;
+    padding: 0;
+    page-break-after: always;
+    page-break-inside: avoid;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page:last-child { page-break-after: avoid; }
+
+  /* ===== COVER PAGE ===== */
+  .cover {
+    background: var(--dark-bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 50px;
+    position: relative;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    left: -150px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0,212,170,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cover-logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-title span {
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .cover-tagline {
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    margin-bottom: 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-pillars {
+    display: flex;
+    gap: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-pillar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cover-pillar-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-green);
+  }
+
+  .cover-pillar-text {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .cover-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+  }
+
+  .cover-footer-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  /* ===== INNER PAGES ===== */
+  .inner {
+    background: var(--dark-bg);
+    padding: 40px 45px 30px 45px;
+    position: relative;
+  }
+
+  .inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-main);
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .page-header-logo {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .page-header-section {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent-green);
+    letter-spacing: 1px;
+  }
+
+  .section-number {
+    font-size: 40px;
+    font-weight: 900;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-green);
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    line-height: 1.2;
+  }
+
+  .body-text {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+  }
+
+  .body-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .highlight-box {
+    background: var(--gradient-card);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    position: relative;
+  }
+
+  .highlight-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gradient-main);
+    border-radius: 14px 14px 0 0;
+  }
+
+  .highlight-box .quote {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+
+  .highlight-box .quote span {
+    color: var(--accent-green);
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 14px 0;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .card-icon { font-size: 24px; margin-bottom: 8px; }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+  }
+
+  .card-text {
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+
+  /* Persona cards */
+  .persona-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .persona-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+  }
+
+  .persona-card.p1::after { background: var(--accent-blue); }
+  .persona-card.p2::after { background: var(--accent-green); }
+  .persona-card.p3::after { background: #f59e0b; }
+
+  .persona-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+
+  .persona-card.p1 .persona-tag { background: rgba(99,102,241,0.2); color: var(--accent-violet); }
+  .persona-card.p2 .persona-tag { background: rgba(0,212,170,0.15); color: var(--accent-green); }
+  .persona-card.p3 .persona-tag { background: rgba(245,158,11,0.15); color: #f59e0b; }
+
+  .persona-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .persona-arch {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+
+  .persona-detail {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .persona-detail-label {
+    color: var(--accent-green);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 62px;
+  }
+
+  .persona-detail-value { color: var(--text-secondary); }
+
+  /* Pillars row */
+  .pillars-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .pillar-card {
+    text-align: center;
+    padding: 24px 16px;
+    background: var(--gradient-card);
+    border-radius: 14px;
+    border: 1px solid rgba(99,102,241,0.15);
+  }
+
+  .pillar-icon { font-size: 30px; margin-bottom: 10px; }
+
+  .pillar-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .pillar-desc {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  /* Beliefs */
+  .belief-list {
+    list-style: none;
+    margin: 12px 0;
+  }
+
+  .belief-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  .belief-list li::before {
+    content: '◆';
+    color: var(--accent-green);
+    font-size: 7px;
+    margin-top: 4px;
+    min-width: 10px;
+  }
+
+  /* Comparison table */
+  table.comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 11px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .comp-table th {
+    background: var(--card-bg2);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba(99,102,241,0.3);
+    color: var(--text-secondary);
+  }
+
+  .comp-table th.bad { color: #f87171; }
+  .comp-table th.good { color: var(--accent-green); }
+
+  .comp-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    vertical-align: top;
+  }
+
+  .comp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .comp-table td:first-child { color: var(--text-primary); font-weight: 600; }
+
+  /* Objections table */
+  table.obj-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 11px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .obj-table th {
+    background: var(--card-bg2);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba(99,102,241,0.3);
+    color: var(--text-secondary);
+  }
+
+  .obj-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    vertical-align: top;
+  }
+
+  .obj-table td:first-child {
+    color: #f87171;
+    font-weight: 600;
+    font-style: italic;
+    width: 34%;
+  }
+
+  .obj-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* Feature list */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .feature-num {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    background: var(--gradient-main);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+  }
+
+  .feature-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .feature-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+
+  /* Channel cards */
+  .channel-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .channel-icon { font-size: 28px; min-width: 36px; text-align: center; }
+
+  .channel-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1px;
+  }
+
+  .channel-role {
+    font-size: 9px;
+    color: var(--accent-green);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+
+  .channel-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* Pricing box */
+  .pricing-box {
+    background: var(--gradient-card);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pricing-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-main);
+  }
+
+  .pricing-amount {
+    font-size: 42px;
+    font-weight: 900;
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pricing-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  .pricing-detail {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .kpi-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .kpi-icon { font-size: 20px; margin-bottom: 6px; }
+
+  .kpi-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+
+  .kpi-desc {
+    font-size: 9.5px;
+    color: var(--text-muted);
+    line-height: 1.35;
+  }
+
+  /* North star */
+  .northstar {
+    background: var(--gradient-card);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    margin: 14px 0;
+  }
+
+  .northstar-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    margin-bottom: 8px;
+  }
+
+  .northstar-metric {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .northstar-why {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Page number */
+  .page-num {
+    position: absolute;
+    bottom: 24px;
+    right: 45px;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  @media print {
+    body { background: var(--dark-bg); }
+    .page { margin: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: COVER ==================== -->
+<div class="page cover">
+  <div class="cover-logo">Mi Rutina App</div>
+  <div class="cover-title">Documento<br><span>Fundacional</span></div>
+  <div class="cover-tagline">"Tu entrenador en el bolsillo."</div>
+  <div class="cover-pillars">
+    <div class="cover-pillar">
+      <div class="cover-pillar-dot"></div>
+      <div class="cover-pillar-text">Cero Friccion</div>
+    </div>
+    <div class="cover-pillar">
+      <div class="cover-pillar-dot"></div>
+      <div class="cover-pillar-text">Ecosistema Cerrado</div>
+    </div>
+    <div class="cover-pillar">
+      <div class="cover-pillar-dot"></div>
+      <div class="cover-pillar-text">Control Total</div>
+    </div>
+  </div>
+  <div class="cover-footer">
+    <div class="cover-footer-text">CONFIDENCIAL</div>
+    <div class="cover-footer-text">ABRIL 2026</div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: BRAND TRUTH ==================== -->
+<div class="page inner">
+  <div class="page-header">
+    <div class="page-header-logo">Mi Rutina App</div>
+    <div class="page-header-section">Verdad de Marca</div>
+  </div>
+
+  <div class="section-number">01</div>
+  <div class="section-label">Brand Truth</div>
+  <div class="section-title">Por que existe Mi Rutina</div>
+
+  <div class="body-text">
+    Mi Rutina nace de una experiencia real. Su creador entrena con un entrenador personal hace dos anos. Cuando un amigo empezo a entrenar virtualmente con el mismo coach, las limitaciones del sistema se hicieron evidentes: <strong>rutinas perdidas en WhatsApp, fotos de comidas que nadie revisa, esperas en el gimnasio sin respuesta, y cero visibilidad de progreso real.</strong>
+  </div>
+
+  <div class="highlight-box">
+    <div class="quote">"¿Por que no existe <span>una sola aplicacion</span> que centralice todo lo que necesita un entrenador virtual y su atleta?"</div>
+  </div>
+
+  <div class="body-text">
+    <strong>Mi Rutina App</strong> es un anadido profesional al servicio del entrenador. No lo reemplaza — lo potencia. El atleta siempre sabe que hay un profesional real detras. La app centraliza rutinas interactivas, seguimiento nutricional con IA, control de pagos y comunicacion directa en un solo lugar.
+  </div>
+
+  <div class="pillars-row">
+    <div class="pillar-card">
+      <div class="pillar-icon">⚡</div>
+      <div class="pillar-title">Cero Friccion</div>
+      <div class="pillar-desc">PWA sin descarga. Un link y listo. Funciona como app nativa.</div>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">🔒</div>
+      <div class="pillar-title">Ecosistema Cerrado</div>
+      <div class="pillar-desc">Entrenador y atleta conectados en una sola plataforma dedicada.</div>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">🎯</div>
+      <div class="pillar-title">Control Total</div>
+      <div class="pillar-desc">Rutinas, comidas, pagos, comunicacion y progreso en un lugar.</div>
+    </div>
+  </div>
+
+  <ul class="belief-list">
+    <li>La tecnologia debe eliminar friccion, no agregarla</li>
+    <li>La IA es un aliado que potencia al entrenador, no lo reemplaza</li>
+    <li>Un cliente que ve su progreso real es un cliente que renueva</li>
+    <li>Siempre hay un profesional detras — la app es el vehiculo, no el destino</li>
+  </ul>
+
+  <div class="page-num">02</div>
+</div>
+
+<!-- ==================== PAGE 3: AUDIENCE ==================== -->
+<div class="page inner">
+  <div class="page-header">
+    <div class="page-header-logo">Mi Rutina App</div>
+    <div class="page-header-section">Audiencia</div>
+  </div>
+
+  <div class="section-number">02</div>
+  <div class="section-label">Audience Architecture</div>
+  <div class="section-title">A quien servimos</div>
+
+  <div class="persona-card p1">
+    <div class="persona-tag">Persona Principal</div>
+    <div class="persona-name">El Entrenador Virtual</div>
+    <div class="persona-arch">El profesional que quiere escalar</div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Motivacion</span>
+      <span class="persona-detail-value">Pasar de 5-10 clientes desordenados a gestionar 30+ con la misma calidad</span>
+    </div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Tension</span>
+      <span class="persona-detail-value">Mas tiempo organizando que entrenando. Cuando esta con un cliente presencial, los virtuales esperan.</span>
+    </div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Objecion</span>
+      <span class="persona-detail-value">"Mis clientes no van a usar otra app" / "Ya tengo mi sistema con WhatsApp"</span>
+    </div>
+  </div>
+
+  <div class="persona-card p2">
+    <div class="persona-tag">Persona Secundaria</div>
+    <div class="persona-name">El Atleta Comprometido</div>
+    <div class="persona-arch">El cliente que quiere resultados reales</div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Motivacion</span>
+      <span class="persona-detail-value">Claridad total sobre que hacer, como hacerlo, y ver que su esfuerzo da resultados</span>
+    </div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Tension</span>
+      <span class="persona-detail-value">Llega al gimnasio y espera a que el entrenador conteste. La info esta dispersa.</span>
+    </div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Objecion</span>
+      <span class="persona-detail-value">"¿De verdad mi entrenador revisa mis cosas o esto es automatico?"</span>
+    </div>
+  </div>
+
+  <div class="persona-card p3">
+    <div class="persona-tag">Persona Terciaria</div>
+    <div class="persona-name">El Atleta Nuevo</div>
+    <div class="persona-arch">El que llega sin experiencia</div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Motivacion</span>
+      <span class="persona-detail-value">Entrenar con guia profesional. Elige virtual porque es mas economico (~$250K vs ~$700K COP/mes).</span>
+    </div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Tension</span>
+      <span class="persona-detail-value">No conoce ejercicios ni tecnica. "Press inclinado 3x12" no le dice nada.</span>
+    </div>
+    <div class="persona-detail">
+      <span class="persona-detail-label">Objecion</span>
+      <span class="persona-detail-value">"¿Voy a poder entrenar bien sin tener al entrenador al lado?"</span>
+    </div>
+  </div>
+
+  <div style="margin-top:16px; padding:16px 20px; background:var(--card-bg); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+    <div style="font-size:12px; font-weight:700; color:#f87171; margin-bottom:6px;">✕ Quien NO es el target</div>
+    <div style="font-size:11px; color:var(--text-secondary); line-height:1.5;">
+      Usuarios que buscan rutinas genericas gratuitas. Gimnasios que necesitan gestion masiva. Personas que quieren entrenar sin entrenador. Atletas que buscan una app que genere rutinas automaticas — aqui siempre hay un entrenador real detras.
+    </div>
+  </div>
+
+  <div class="page-num">03</div>
+</div>
+
+<!-- ==================== PAGE 4: POSITIONING ==================== -->
+<div class="page inner">
+  <div class="page-header">
+    <div class="page-header-logo">Mi Rutina App</div>
+    <div class="page-header-section">Posicionamiento</div>
+  </div>
+
+  <div class="section-number">03</div>
+  <div class="section-label">Cultural Context</div>
+  <div class="section-title">Posicionamiento competitivo</div>
+
+  <div class="body-text">
+    El entrenamiento virtual exploto post-pandemia y se quedo. Pero las herramientas no evolucionaron: un entrenador tipico usa <strong>3 a 5 herramientas</strong> distintas (WhatsApp, Excel, app de comidas, transferencia, videollamada). Cada herramienta adicional es un punto donde se pierde informacion y se pierde el cliente.
+  </div>
+
+  <div class="highlight-box">
+    <div class="quote">La gente quiere entrenamiento personalizado, pero el presencial es caro. El virtual es <span>menos de la mitad del precio</span>, pero la experiencia es inferior. Mi Rutina cierra esa brecha.</div>
+  </div>
+
+  <table class="comp-table">
+    <tr>
+      <th>Aspecto</th>
+      <th class="bad">Metodo Tradicional</th>
+      <th class="good">Mi Rutina App</th>
+    </tr>
+    <tr>
+      <td>Rutinas</td>
+      <td>PDFs estaticos y confusos</td>
+      <td>App interactiva con GIFs</td>
+    </tr>
+    <tr>
+      <td>Tecnica</td>
+      <td>Textos largos ignorados</td>
+      <td>GIF + IA que responde dudas</td>
+    </tr>
+    <tr>
+      <td>Comidas</td>
+      <td>Fotos en WhatsApp o apps pagas</td>
+      <td>Foto → analisis IA instantaneo</td>
+    </tr>
+    <tr>
+      <td>Pagos</td>
+      <td>"¿Ya me pagaste?" por chat</td>
+      <td>Panel con estados y links</td>
+    </tr>
+    <tr>
+      <td>Comunicacion</td>
+      <td>Mezclada con vida personal</td>
+      <td>Notas estructuradas por sesion</td>
+    </tr>
+    <tr>
+      <td>Escalabilidad</td>
+      <td>Cada cliente = mas carga</td>
+      <td>Misma calidad: 5 o 50 clientes</td>
+    </tr>
+  </table>
+
+  <div class="body-text">
+    <strong>Espacio en blanco:</strong> No existe una plataforma que sea un ecosistema cerrado entrenador-atleta con IA integrada, GIFs de tecnica, cero friccion de entrada, enfoque LATAM y precio accesible para entrenadores independientes.
+  </div>
+
+  <div class="page-num">04</div>
+</div>
+
+<!-- ==================== PAGE 5: MESSAGING ==================== -->
+<div class="page inner">
+  <div class="page-header">
+    <div class="page-header-logo">Mi Rutina App</div>
+    <div class="page-header-section">Mensajeria</div>
+  </div>
+
+  <div class="section-number">04</div>
+  <div class="section-label">Messaging Framework</div>
+  <div class="section-title">Como hablamos</div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Para entrenadores</div>
+      <div class="card-text">
+        "Deja de perseguir clientes por WhatsApp."<br>
+        "Tus clientes te van a ver como un profesional de otro nivel."<br>
+        "La misma calidad con 5 o con 50 clientes."
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💪</div>
+      <div class="card-title">Para atletas</div>
+      <div class="card-text">
+        "Tu rutina completa con tecnica visual, siempre disponible."<br>
+        "No mas esperar a que contesten para saber que hacer."<br>
+        "Tu entrenador, pero con superpoderes."
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:18px; margin-bottom:10px;">Manejo de Objeciones</div>
+
+  <table class="obj-table">
+    <tr>
+      <th style="width:36%;">Objecion</th>
+      <th>Respuesta</th>
+    </tr>
+    <tr>
+      <td>"Mis clientes no van a usar otra app"</td>
+      <td>No es otra app — es un link que abre sin descargar. Lo que ven es TU servicio con tu nombre.</td>
+    </tr>
+    <tr>
+      <td>"Ya tengo mi sistema con WhatsApp"</td>
+      <td>WhatsApp sirve para comunicarte. ¿Pero tus clientes pueden ver GIFs de tecnica, registrar comidas con IA, y ver pagos en un solo lugar?</td>
+    </tr>
+    <tr>
+      <td>"¿Funciona sin estar presencial?"</td>
+      <td>Cada ejercicio tiene GIF de tecnica. Si hay dudas, la IA conoce tu rutina y te guia. Es como tener al entrenador al lado.</td>
+    </tr>
+    <tr>
+      <td>"¿No es muy caro?"</td>
+      <td>$24,900/atleta/mes. Con clientes que pagan $250K-$300K mensuales, es un costo minimo por un servicio premium.</td>
+    </tr>
+  </table>
+
+  <div class="cards-grid" style="margin-top:18px;">
+    <div class="card">
+      <div class="card-title" style="color: var(--accent-green);">✓ Tono de voz</div>
+      <div class="card-text">Directo, profesional, motivacional y cercano. Hablar de tu a tu, sin rodeos, con datos precisos.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color: #f87171;">✕ Lenguaje a evitar</div>
+      <div class="card-text">Superlativos vacios ("la mejor app"). Jerga tecnica. Prometer resultados fisicos. Atacar a WhatsApp.</div>
+    </div>
+  </div>
+
+  <div class="page-num">05</div>
+</div>
+
+<!-- ==================== PAGE 6: FEATURES ==================== -->
+<div class="page inner">
+  <div class="page-header">
+    <div class="page-header-logo">Mi Rutina App</div>
+    <div class="page-header-section">Plataforma</div>
+  </div>
+
+  <div class="section-number">05</div>
+  <div class="section-label">Platform & Tools</div>
+  <div class="section-title">10 diferenciadores clave</div>
+
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="feature-num">1</div>
+      <div>
+        <div class="feature-label">120+ ejercicios con GIFs</div>
+        <div class="feature-desc">Tecnica visual en cada ejercicio</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">2</div>
+      <div>
+        <div class="feature-label">Analisis nutricional por IA</div>
+        <div class="feature-desc">Foto → macros estimados al instante</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">3</div>
+      <div>
+        <div class="feature-label">Series avanzadas</div>
+        <div class="feature-desc">Drop Sets y Piramidales configurables</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">4</div>
+      <div>
+        <div class="feature-label">Planificacion semanal flexible</div>
+        <div class="feature-desc">El entrenador ajusta la rutina cada semana</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">5</div>
+      <div>
+        <div class="feature-label">Reportes automaticos</div>
+        <div class="feature-desc">Diario de comidas (10 PM) y semanal (sabados 10 AM)</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">6</div>
+      <div>
+        <div class="feature-label">PWA sin descarga</div>
+        <div class="feature-desc">Un link. Sin App Store ni Play Store</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">7</div>
+      <div>
+        <div class="feature-label">Asistente IA 24/7</div>
+        <div class="feature-desc">Conoce tu rutina, perfil y comidas</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">8</div>
+      <div>
+        <div class="feature-label">Timer inteligente</div>
+        <div class="feature-desc">Descanso con animacion y alerta</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">9</div>
+      <div>
+        <div class="feature-label">Soporte integrado</div>
+        <div class="feature-desc">Chat entrenador-admin con contexto</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-num">10</div>
+      <div>
+        <div class="feature-label">Datos en la nube</div>
+        <div class="feature-desc">Todo persistente y sincronizado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:20px; margin-bottom:12px;">Arquitectura Tecnica</div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <div class="card-title">Frontend</div>
+      <div class="card-text">PWA single-file. HTML/CSS/JS. Funciona offline con Service Worker.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">☁️</div>
+      <div class="card-title">Backend</div>
+      <div class="card-text">Cloudflare Worker serverless + KV (datos) + R2 (fotos).</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Inteligencia Artificial</div>
+      <div class="card-text">Claude Haiku 4.5 para chat y analisis de fotos de comida.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📧</div>
+      <div class="card-title">Notificaciones</div>
+      <div class="card-text">Resend Email API. Reporte diario comidas, resumen semanal, sesiones.</div>
+    </div>
+  </div>
+
+  <div class="page-num">06</div>
+</div>
+
+<!-- ==================== PAGE 7: CHANNELS + MODEL + VISION ==================== -->
+<div class="page inner">
+  <div class="page-header">
+    <div class="page-header-logo">Mi Rutina App</div>
+    <div class="page-header-section">Canales y Vision</div>
+  </div>
+
+  <div class="section-number">06</div>
+  <div class="section-label">Channels & Business Model</div>
+  <div class="section-title">Como llegamos y como monetizamos</div>
+
+  <div class="pricing-box">
+    <div class="pricing-amount">$24,900</div>
+    <div class="pricing-unit">COP / atleta / mes</div>
+    <div class="pricing-detail">
+      El atleta no paga por la app — es parte del servicio de su entrenador.<br>
+      Sin version gratuita limitada. Sin features bloqueados. Todo incluido.
+    </div>
+  </div>
+
+  <div class="channel-card">
+    <div class="channel-icon">🎵</div>
+    <div>
+      <div class="channel-role">Canal #1 — Adquisicion</div>
+      <div class="channel-name">TikTok</div>
+      <div class="channel-desc">Donde estan los entrenadores virtuales. Lives, rutinas, contenido fitness.</div>
+    </div>
+  </div>
+
+  <div class="channel-card">
+    <div class="channel-icon">📸</div>
+    <div>
+      <div class="channel-role">Canal #2 — Marca</div>
+      <div class="channel-name">Instagram</div>
+      <div class="channel-desc">Contenido visual de la app, testimonios, reels cortos.</div>
+    </div>
+  </div>
+
+  <div class="channel-card">
+    <div class="channel-icon">🗣️</div>
+    <div>
+      <div class="channel-role">Canal #3 — Organico</div>
+      <div class="channel-name">Referidos</div>
+      <div class="channel-desc">El producto se vende cuando lo ven funcionando.</div>
+    </div>
+  </div>
+
+  <div class="northstar">
+    <div class="northstar-label">⭐ Metrica Norte</div>
+    <div class="northstar-metric">Retencion mensual de afiliados del entrenador</div>
+    <div class="northstar-why">Si los clientes del entrenador se quedan mes a mes, la plataforma esta entregando valor real.</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">💪</div>
+      <div class="kpi-name">Rutinas / semana</div>
+      <div class="kpi-desc">Engagement del atleta</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🍽️</div>
+      <div class="kpi-name">Comidas / dia</div>
+      <div class="kpi-desc">Adopcion nutricional</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-name">Entrenadores activos</div>
+      <div class="kpi-desc">Crecimiento mensual</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-name">Atletas / entrenador</div>
+      <div class="kpi-desc">Escalabilidad real</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🔄</div>
+      <div class="kpi-name">Leading indicators</div>
+      <div class="kpi-desc">3+ sesiones semana 1 = retencion</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🚫</div>
+      <div class="kpi-name">No medimos</div>
+      <div class="kpi-desc">Vanidad, tiempo en app</div>
+    </div>
+  </div>
+
+  <div class="page-num">07</div>
+</div>
+
+</body>
+</html>

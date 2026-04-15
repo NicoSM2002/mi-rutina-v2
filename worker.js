@@ -446,7 +446,57 @@ export default {
       if (body.token !== 'ent2026') {
         return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), { headers: cors });
       }
-      await env.DB.put(`routine:${client}`, JSON.stringify(body.routine));
+      const routine = body.routine || {};
+      // AI-generate title/sub for each session based on exercises
+      try {
+        const sessionKeys = Object.keys(routine).filter(k => /^sesion\d+$/.test(k));
+        const summary = sessionKeys.map(k => {
+          const s = routine[k] || {};
+          const exs = [];
+          for (const c of (s.circuits || [])) {
+            for (const e of (c.exercises || [])) {
+              if (e && e.name) exs.push(e.name);
+            }
+          }
+          return { key: k, exercises: exs };
+        }).filter(s => s.exercises.length > 0);
+        if (summary.length && env.ANTHROPIC_API_KEY) {
+          const prompt = `Analizá estas sesiones de entrenamiento y para cada una devolvé un JSON con el grupo muscular principal (title) y un subtítulo breve listando los ejercicios separados por " · " (sub). title debe ser corto (1-3 palabras, ej: "Cuádriceps", "Pecho + Tríceps", "Espalda + Bíceps", "Hombros", "Full Body"). sub es la lista de ejercicios principales tal cual.
+
+Sesiones:
+${summary.map(s => `${s.key}: ${s.exercises.join(', ')}`).join('\n')}
+
+Devolvé SOLO un JSON así, sin texto extra:
+{ "${summary[0].key}": { "title": "...", "sub": "..." }${summary.length>1?', ...':''} }`;
+          const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': env.ANTHROPIC_API_KEY,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 600,
+              messages: [{ role: 'user', content: prompt }]
+            })
+          });
+          const cd = await claudeRes.json();
+          const raw = cd.content?.[0]?.text || '';
+          const m = raw.match(/\{[\s\S]*\}/);
+          if (m) {
+            const parsed = JSON.parse(m[0]);
+            for (const key of Object.keys(parsed)) {
+              if (routine[key]) {
+                if (parsed[key].title) routine[key].title = parsed[key].title;
+                if (parsed[key].sub)   routine[key].sub   = parsed[key].sub;
+              }
+            }
+          }
+        }
+      } catch (_) { /* falla silenciosa: guardamos igual */ }
+
+      await env.DB.put(`routine:${client}`, JSON.stringify(routine));
 
       const athleteEmail = athleteRecord?.email;
       if (athleteEmail) {
@@ -482,7 +532,7 @@ export default {
         }).catch(() => {}));
       }
 
-      return new Response(JSON.stringify({ ok: true }), { headers: cors });
+      return new Response(JSON.stringify({ ok: true, routine }), { headers: cors });
     }
 
     // ── LIST ATHLETES (public read) ──
