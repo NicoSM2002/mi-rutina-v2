@@ -1,3 +1,11 @@
+// ── Shared constants (single source of truth) ──
+// Para cambiar los correos de los atletas, editá solo aquí.
+const ATHLETES = {
+  nicolas:  { name: 'Nicolás Saravia', email: 'nicolas@drakeconstruction.com' },
+  msaravia: { name: 'María Saravia',   email: 'nicolas@drakeconstruction.com' },
+};
+const TRAINER_EMAIL = 'nicolas@drakeconstruction.com';
+
 // ── Helper: week range (Mon–Sat) in Colombia timezone ──
 function getWeekRange(dateStr) {
   // dateStr = 'YYYY-MM-DD' or null (defaults to today Colombia)
@@ -80,12 +88,6 @@ export default {
       'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json'
     };
-
-    const ATHLETES = {
-      nicolas:  { name: 'Nicolás Saravia', email: 'nicolas@drakeconstruction.com' },
-      msaravia: { name: 'María Saravia',   email: 'nicolas@drakeconstruction.com' },
-    };
-    const TRAINER_EMAIL = 'nicolas@drakeconstruction.com';
 
     const MEAL_SLOTS = [
       { key: 'desayuno',     label: 'Desayuno',      icon: '☀️' },
@@ -499,8 +501,6 @@ export default {
 
 // ── Daily meal report (10 PM Colombia) ──
 async function sendDailyMealReport(env) {
-  const ATHLETES = { nicolas: { name: 'Nicolás Saravia' }, msaravia: { name: 'María Saravia' } };
-  const TRAINER_EMAIL = 'nicolas@drakeconstruction.com';
   const MEAL_SLOTS = [
     { key: 'desayuno', label: 'Desayuno', icon: '☀️' },
     { key: 'mediasNueves', label: 'Medias nueves', icon: '🍎' },
@@ -575,11 +575,6 @@ async function sendDailyMealReport(env) {
 
 // ── Workout reminder (1 PM Colombia, only if no session completed today) ──
 async function sendWorkoutReminder(env) {
-  const ATHLETES = {
-    nicolas:  { name: 'Nicolás Saravia', email: 'nicolas@drakeconstruction.com' },
-    msaravia: { name: 'María Saravia',   email: 'nicolas@drakeconstruction.com' },
-  };
-
   const coDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }));
   const todayKey = `${coDate.getFullYear()}-${String(coDate.getMonth()+1).padStart(2,'0')}-${String(coDate.getDate()).padStart(2,'0')}`;
   const dayLabel = coDate.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -641,8 +636,6 @@ function buildMacrosTotalHtml(totals, title) {
 
 // ── Weekly report (Saturday 10 AM Colombia) ──
 async function sendWeeklyReport(env) {
-  const ATHLETES = { nicolas: { name: 'Nicolás Saravia' }, msaravia: { name: 'María Saravia' } };
-  const TRAINER_EMAIL = 'nicolas@drakeconstruction.com';
   const MEAL_SLOTS = [
     { key: 'desayuno', label: 'Desayuno', icon: '☀️' },
     { key: 'mediasNueves', label: 'Medias nueves', icon: '🍎' },
