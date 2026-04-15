@@ -1846,6 +1846,9 @@ function show(id) {
 async function showRoutine() {
   show('routine');
 
+  // Re-fetch latest routine from server (in case trainer made changes)
+  await loadRoutine();
+
   // Get today's date in Colombia timezone
   const nowCO = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }));
   const todayISO = `${nowCO.getFullYear()}-${String(nowCO.getMonth()+1).padStart(2,'0')}-${String(nowCO.getDate()).padStart(2,'0')}`;
@@ -4192,7 +4195,7 @@ async function saveRoutineFromEditor() {
   try {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'save-routine', token:TRAINER_TOKEN, routine:editorData })
+      body: JSON.stringify({ action:'save-routine', token:TRAINER_TOKEN, client: trainerClientId, routine:editorData })
     });
     const json = await res.json();
     if (json.ok) {
