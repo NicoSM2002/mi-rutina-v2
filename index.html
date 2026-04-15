@@ -14,6 +14,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 html { scroll-padding-block: 30vh; }
+/* When soft keyboard is visible, pin login content to top so the input isn't covered */
+body.kbd-open #athlete-login .tlogin-body,
+body.kbd-open #trainer-login .tlogin-body {
+  justify-content: flex-start;
+  padding-top: calc(var(--sat) + 72px);
+}
 :root {
   --sat: env(safe-area-inset-top);
   --sab: env(safe-area-inset-bottom);
@@ -3695,13 +3701,31 @@ function platformPayAction() {
 }
 
 /* ── keep focused input visible above soft keyboard ── */
-document.addEventListener('focusin', (e) => {
-  const el = e.target;
-  if (!el || !el.matches('input, textarea, [contenteditable="true"]')) return;
-  setTimeout(() => {
-    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
-  }, 300);
-});
+(function () {
+  const vv = window.visualViewport;
+  function updateKbdState() {
+    if (!vv) return;
+    const kbd = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    const open = kbd > 80;
+    document.body.classList.toggle('kbd-open', open);
+    document.documentElement.style.setProperty('--kbd-height', kbd + 'px');
+  }
+  if (vv) {
+    vv.addEventListener('resize', updateKbdState);
+    vv.addEventListener('scroll', updateKbdState);
+  }
+  document.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (!el || !el.matches('input, textarea, [contenteditable="true"]')) return;
+    setTimeout(() => {
+      updateKbdState();
+      try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
+    }, 300);
+  });
+  document.addEventListener('focusout', () => {
+    setTimeout(() => document.body.classList.remove('kbd-open'), 100);
+  });
+})();
 
 /* ── chat ── */
 const WORKER_URL = 'https://mirutina.nicolas-f07.workers.dev';
