@@ -1162,17 +1162,16 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 .re-name-btn:active { background:var(--b); }
 .re-change-btn { background:var(--bg); border:1px solid var(--ac); border-radius:8px; padding:9px 10px; color:var(--acl); font-family:var(--font-d); font-size:11px; font-weight:700; cursor:pointer; flex-shrink:0; }
 .re-wr-row { display:flex; gap:8px; }
-.re-wr-col { flex:1; }
+.re-wr-col { flex:1 1 0; min-width:0; }
 .re-input { width:100%; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:9px 10px; color:var(--t1); font-family:var(--font-d); font-size:15px; font-weight:700; outline:none; -webkit-appearance:none; text-align:center; }
 .re-input:focus { border-color:var(--ac); }
 .re-input-label { font-family:var(--font-d); font-size:10px; color:var(--t2); text-align:center; margin-top:4px; }
-.re-combo { display:flex; align-items:stretch; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:10px; overflow:hidden; }
+.re-combo { display:flex; align-items:stretch; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:10px; overflow:hidden; min-width:0; }
 .re-combo:focus-within { border-color:var(--ac); }
-.re-combo input { flex:1; min-width:0; background:transparent; border:none; padding:9px 6px 9px 10px; color:var(--t1); font-family:var(--font-d); font-size:15px; font-weight:700; outline:none; -webkit-appearance:none; text-align:right; }
+.re-combo input { flex:1 1 0; min-width:0; width:100%; background:transparent; border:none; padding:9px 4px 9px 8px; color:var(--t1); font-family:var(--font-d); font-size:15px; font-weight:700; outline:none; -webkit-appearance:none; text-align:center; }
 .re-combo input::-webkit-outer-spin-button, .re-combo input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
 .re-combo input[type=number] { -moz-appearance:textfield; }
-.re-unit-select { background:rgba(255,255,255,.04); border:none; border-left:1px solid rgba(255,255,255,.08); padding:0 8px; color:var(--ac); font-family:var(--font-d); font-size:13px; font-weight:700; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none; text-align:center; }
-.re-unit-fixed { display:flex; align-items:center; padding:0 10px; background:rgba(255,255,255,.04); border-left:1px solid rgba(255,255,255,.08); color:var(--t2); font-family:var(--font-d); font-size:13px; font-weight:700; }
+.re-unit-select { flex:0 0 auto; background:rgba(255,255,255,.04); border:none; border-left:1px solid rgba(255,255,255,.08); padding:0 18px 0 8px; color:var(--t1); font-family:var(--font-d); font-size:12px; font-weight:600; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none; text-align:center; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23cbd5e1' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>"); background-repeat:no-repeat; background-position:right 6px center; }
 .re-nota { width:100%; background:var(--s2); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:12px 14px; color:var(--t1); font-family:var(--font-b); font-size:14px; outline:none; resize:none; -webkit-appearance:none; margin-top:8px; font-size:16px; }
 .re-save-btn { width:100%; padding:16px; background:linear-gradient(135deg,#FF6B2C,#FF8F5E); border:none; border-radius:14px; font-family:var(--font-d); font-size:16px; font-weight:700; color:#fff; cursor:pointer; margin-top:14px; }
 .re-save-btn:active { opacity:.85; }
@@ -3946,8 +3945,11 @@ function renderRoutineEditor() {
             </div>
             <div class="re-wr-col">
               <div class="re-combo">
-                <input type="number" inputmode="numeric" value="${pr}" placeholder="0" oninput="updateStepRepsNum('${editorDay}',${ci},${ei},1,${si},this.value)">
-                <span class="re-unit-fixed">reps</span>
+                <input type="number" inputmode="numeric" value="${pr.num}" placeholder="0" oninput="updateStepRepsNum('${editorDay}',${ci},${ei},1,${si},this.value)">
+                <select class="re-unit-select" onchange="updateStepRepsType('${editorDay}',${ci},${ei},1,${si},this.value)">
+                  <option value="reps"${pr.type==='reps'?' selected':''}>reps</option>
+                  <option value="reps alternas"${pr.type==='reps alternas'?' selected':''}>alt.</option>
+                </select>
               </div>
               <div class="re-input-label">Reps</div>
             </div>
@@ -3985,8 +3987,11 @@ function renderRoutineEditor() {
                 </div>
                 <div class="re-wr-col">
                   <div class="re-combo">
-                    <input type="number" inputmode="numeric" value="${pr}" placeholder="0" oninput="updateEditorRepsNum('${editorDay}',${ci},${ei},'${rField}',this.value)">
-                    <span class="re-unit-fixed">reps</span>
+                    <input type="number" inputmode="numeric" value="${pr.num}" placeholder="0" oninput="updateEditorRepsNum('${editorDay}',${ci},${ei},'${rField}',this.value)">
+                    <select class="re-unit-select" onchange="updateEditorRepsType('${editorDay}',${ci},${ei},'${rField}',this.value)">
+                      <option value="reps"${pr.type==='reps'?' selected':''}>reps</option>
+                      <option value="reps alternas"${pr.type==='reps alternas'?' selected':''}>alt.</option>
+                    </select>
                   </div>
                   <div class="re-input-label">Reps</div>
                 </div>
@@ -4043,17 +4048,20 @@ function parseWeight(s) {
 }
 
 function parseReps(s) {
-  if (!s) return '';
-  const m = String(s).match(/(\d+)/);
-  return m ? m[1] : '';
+  if (!s) return { num: '', type: 'reps' };
+  const str = String(s);
+  const m = str.match(/(\d+)/);
+  const num = m ? m[1] : '';
+  const type = /alterna/i.test(str) ? 'reps alternas' : 'reps';
+  return { num, type };
 }
 
 function formatWeight(num, unit) {
   return num ? `${num} ${unit}` : '';
 }
 
-function formatReps(num) {
-  return num ? `${num} reps` : '';
+function formatReps(num, type) {
+  return num ? `${num} ${type || 'reps'}` : '';
 }
 
 function updateEditorWeightNum(day, ci, ei, field, num) {
@@ -4069,7 +4077,15 @@ function updateEditorWeightUnit(day, ci, ei, field, unit) {
 }
 
 function updateEditorRepsNum(day, ci, ei, field, num) {
-  editorData[day].circuits[ci].exercises[ei][field] = formatReps(num);
+  const ex = editorData[day].circuits[ci].exercises[ei];
+  const { type } = parseReps(ex[field] || '');
+  ex[field] = formatReps(num, type);
+}
+
+function updateEditorRepsType(day, ci, ei, field, type) {
+  const ex = editorData[day].circuits[ci].exercises[ei];
+  const { num } = parseReps(ex[field] || '');
+  ex[field] = formatReps(num, type);
 }
 
 function updateStepWeightNum(day, ci, ei, week, si, num) {
@@ -4088,7 +4104,16 @@ function updateStepWeightUnit(day, ci, ei, week, si, unit) {
 
 function updateStepRepsNum(day, ci, ei, week, si, num) {
   const key = week === 1 ? 'steps1' : 'steps2';
-  editorData[day].circuits[ci].exercises[ei][key][si].reps = formatReps(num);
+  const step = editorData[day].circuits[ci].exercises[ei][key][si];
+  const { type } = parseReps(step.reps || '');
+  step.reps = formatReps(num, type);
+}
+
+function updateStepRepsType(day, ci, ei, week, si, type) {
+  const key = week === 1 ? 'steps1' : 'steps2';
+  const step = editorData[day].circuits[ci].exercises[ei][key][si];
+  const { num } = parseReps(step.reps || '');
+  step.reps = formatReps(num, type);
 }
 
 function addStep(day, ci, ei, week) {
