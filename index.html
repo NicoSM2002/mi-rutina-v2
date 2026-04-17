@@ -1693,23 +1693,6 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
   </div>
   <div class="tportal-body">
     <div class="section-label" style="margin-bottom:12px">Mis clientes</div>
-    <div class="client-card" onclick="openTrainerClient('nicolas','Nicolás Saravia')">
-      <div class="client-avatar">NS</div>
-      <div>
-        <div class="client-name">Nicolás Saravia</div>
-        <div class="client-meta">Plan: Hipertrofia Muscular</div>
-      </div>
-      <div class="client-arrow">→</div>
-    </div>
-    <div style="height:10px"></div>
-    <div class="client-card" onclick="openTrainerClient('msaravia','María Saravia')">
-      <div class="client-avatar" style="background:linear-gradient(135deg,var(--pu),var(--cy))">MS</div>
-      <div>
-        <div class="client-name">María Saravia</div>
-        <div class="client-meta">Plan: Pérdida de grasa y tonificación</div>
-      </div>
-      <div class="client-arrow">→</div>
-    </div>
     <div id="trainer-extra-clients"></div>
   </div>
 </div>
@@ -3169,8 +3152,8 @@ async function loadTrainerExtraClients() {
   const container = document.getElementById('trainer-extra-clients');
   if (!container) return;
   const list = await fetchDynamicAthletes();
-  const extras = list.filter(a => a.clientId !== 'nicolas' && a.clientId !== 'msaravia');
-  if (!extras.length) { container.innerHTML = ''; return; }
+  const extras = list;
+  if (!extras.length) { container.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--t3);font-size:13px">No hay atletas aún. Tocá "+" para crear el primero.</div>'; return; }
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   container.innerHTML = extras.map(a => {
     const displayName = a.name || a.username || '?';
