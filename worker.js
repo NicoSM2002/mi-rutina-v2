@@ -40,7 +40,9 @@ const SEED_ATHLETES = [
 
 async function bootstrapAthletesIfNeeded(env) {
   const existing = await env.DB.get('athlete-index', 'json');
-  if (existing && Array.isArray(existing) && existing.length > 0) return existing;
+  // Bootstrap only on the very first call (index never existed).
+  // Respect an empty array — means trainer deleted everyone intentionally.
+  if (existing !== null) return existing;
   const ids = [];
   for (const a of SEED_ATHLETES) {
     await env.DB.put(`athlete:${a.clientId}`, JSON.stringify({ ...a, createdAt: Date.now(), archived: false }));
@@ -742,7 +744,7 @@ Si un campo no aparece claramente en el PDF, poné null. No inventes.`;
       }
     }
 
-    // ── DELETE ATHLETE (trainer only, soft delete) ──
+    // ── DELETE ATHLETE (trainer only) ──
     if (body.action === 'delete-athlete') {
       if (body.token !== 'ent2026') {
         return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), { headers: cors });
@@ -752,9 +754,19 @@ Si un campo no aparece claramente en el PDF, poné null. No inventes.`;
       if (!existing) {
         return new Response(JSON.stringify({ ok: false, error: 'Atleta no encontrado' }), { headers: cors });
       }
-      await env.DB.put(`athlete:${id}`, JSON.stringify({ ...existing, archived: true }));
       const ids = (await env.DB.get('athlete-index', 'json')) || [];
       await env.DB.put('athlete-index', JSON.stringify(ids.filter(x => x !== id)));
+      if (body.hard) {
+        // Hard delete: wipe all data
+        await Promise.all([
+          env.DB.delete(`athlete:${id}`), env.DB.delete(`routine:${id}`),
+          env.DB.delete(`completions:${id}`), env.DB.delete(`meals:${id}`),
+          env.DB.delete(`payment:${id}`)
+        ]);
+      } else {
+        // Soft delete: keep record archived for potential restore
+        await env.DB.put(`athlete:${id}`, JSON.stringify({ ...existing, archived: true }));
+      }
       return new Response(JSON.stringify({ ok: true }), { headers: cors });
     }
 

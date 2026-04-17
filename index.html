@@ -1804,6 +1804,85 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
   </div>
 </div>
 
+<!-- ══ TRAINER EDIT ATHLETE PROFILE ══ -->
+<div class="screen" id="trainer-edit-profile">
+  <div class="tportal-header">
+    <button class="back-btn" onclick="show('trainer-client')">‹ Volver</button>
+    <div class="tportal-title">Editar perfil</div>
+  </div>
+  <div class="tportal-body" style="padding-bottom:40px">
+    <form id="edit-profile-form" onsubmit="event.preventDefault(); saveEditAthleteProfile();" autocomplete="off">
+      <div class="section-label" style="margin-bottom:10px">Identidad</div>
+      <div class="na-field"><label class="na-label">Nombre completo</label>
+        <input class="na-input" id="ep-name" type="text" required></div>
+      <div class="na-field"><label class="na-label">Email</label>
+        <input class="na-input" id="ep-email" type="email"></div>
+      <div class="na-row">
+        <div class="na-field na-col"><label class="na-label">Teléfono</label>
+          <input class="na-input" id="ep-phone" type="tel"></div>
+        <div class="na-field na-col"><label class="na-label">Fecha de nacimiento</label>
+          <input class="na-input" id="ep-birthdate" type="date"></div>
+      </div>
+
+      <div class="section-label" style="margin-top:20px;margin-bottom:10px">Entrenamiento</div>
+      <div class="na-field">
+        <label class="na-label">Sesiones por semana</label>
+        <div class="na-pills" id="ep-sessions">
+          <button type="button" class="na-pill" data-val="3" onclick="setEpSessions(3)">3</button>
+          <button type="button" class="na-pill" data-val="4" onclick="setEpSessions(4)">4</button>
+          <button type="button" class="na-pill" data-val="5" onclick="setEpSessions(5)">5</button>
+          <button type="button" class="na-pill" data-val="6" onclick="setEpSessions(6)">6</button>
+        </div>
+      </div>
+      <div class="na-field"><label class="na-label">Objetivo</label>
+        <select class="na-input" id="ep-goal">
+          <option value="">Seleccionar…</option>
+          <option value="hipertrofia">Hipertrofia</option>
+          <option value="perdida-grasa">Pérdida de grasa</option>
+          <option value="fuerza">Fuerza</option>
+          <option value="recomposicion">Recomposición</option>
+          <option value="rendimiento">Rendimiento</option>
+          <option value="otro">Otro</option>
+        </select></div>
+      <div class="na-field"><label class="na-label">Nivel</label>
+        <select class="na-input" id="ep-level">
+          <option value="">Seleccionar…</option>
+          <option value="principiante">Principiante</option>
+          <option value="intermedio">Intermedio</option>
+          <option value="avanzado">Avanzado</option>
+        </select></div>
+
+      <details class="na-details" open>
+        <summary class="na-summary">Antropometría</summary>
+        <div class="na-row">
+          <div class="na-field na-col"><label class="na-label">Peso (kg)</label>
+            <input class="na-input" id="ep-weight" type="number" step="0.1" inputmode="decimal"></div>
+          <div class="na-field na-col"><label class="na-label">Altura (cm)</label>
+            <input class="na-input" id="ep-height" type="number" step="0.1" inputmode="decimal"></div>
+        </div>
+        <div class="na-row">
+          <div class="na-field na-col"><label class="na-label">% Grasa</label>
+            <input class="na-input" id="ep-bodyfat" type="number" step="0.1" inputmode="decimal"></div>
+          <div class="na-field na-col"><label class="na-label">Músculo (kg)</label>
+            <input class="na-input" id="ep-muscle" type="number" step="0.1" inputmode="decimal"></div>
+        </div>
+      </details>
+
+      <details class="na-details">
+        <summary class="na-summary">Notas y lesiones</summary>
+        <div class="na-field"><label class="na-label">Lesiones / restricciones</label>
+          <textarea class="na-input" id="ep-injuries" rows="2"></textarea></div>
+        <div class="na-field"><label class="na-label">Notas del entrenador</label>
+          <textarea class="na-input" id="ep-notes" rows="3"></textarea></div>
+      </details>
+
+      <div id="ep-error" class="tlogin-error"></div>
+      <button type="submit" class="tlogin-btn" id="ep-save" style="margin-top:18px">Guardar cambios</button>
+      <button type="button" onclick="deleteCurrentAthlete()" style="width:100%;margin-top:12px;padding:14px;background:none;border:1px solid #f87171;border-radius:12px;color:#f87171;font-family:var(--font-d);font-size:14px;font-weight:700;cursor:pointer">🗑️ Eliminar atleta</button>
+    </form>
+  </div>
+</div>
+
 <!-- ══ PROFILE GENERIC (atletas creados dinámicamente) ══ -->
 <div class="screen" id="profile-generic">
   <div class="profile-hero">
@@ -1835,7 +1914,10 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
   <div class="tclient-header">
     <div class="tclient-header-top">
       <div class="tclient-name" id="tclient-name">Nicolás Saravia</div>
-      <button class="chat-fab" onclick="openSupportChat()" title="Soporte" style="background:linear-gradient(135deg,#6366f1,#818cf8)">💬</button>
+      <div style="display:flex;gap:8px">
+        <button class="chat-fab" onclick="openEditAthleteProfile()" title="Editar perfil" style="background:linear-gradient(135deg,#6366f1,#818cf8)">⚙️</button>
+        <button class="chat-fab" onclick="openSupportChat()" title="Soporte" style="background:linear-gradient(135deg,#34d399,#06b6d4)">💬</button>
+      </div>
     </div>
     <div class="tclient-tabs">
       <button class="tclient-tab active" id="tab-rutinas" onclick="setTrainerTab('rutinas')">💪 Rutinas</button>
@@ -3316,6 +3398,100 @@ async function submitNewAthlete() {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Crear atleta';
   }
+}
+
+let _editingAthlete = null;
+
+function setEpSessions(n) {
+  document.querySelectorAll('#ep-sessions .na-pill').forEach(b => {
+    b.classList.toggle('na-pill-active', parseInt(b.dataset.val) === n);
+  });
+}
+
+async function openEditAthleteProfile() {
+  if (!trainerClientId) return;
+  const list = dynamicAthletesCache || await fetchDynamicAthletes();
+  const a = (list || []).find(x => x.clientId === trainerClientId);
+  if (!a) { alert('No se encontró el atleta'); return; }
+  _editingAthlete = a;
+  const p = a.profile || {};
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+  setVal('ep-name', a.name || '');
+  setVal('ep-email', a.email || '');
+  setVal('ep-phone', a.phone || '');
+  setVal('ep-birthdate', a.birthdate || '');
+  setVal('ep-weight', p.weight);
+  setVal('ep-height', p.height);
+  setVal('ep-bodyfat', p.bodyFat);
+  setVal('ep-muscle', p.muscleMass);
+  setVal('ep-injuries', p.injuries || '');
+  setVal('ep-notes', p.notes || '');
+  document.getElementById('ep-goal').value = p.goal || '';
+  document.getElementById('ep-level').value = p.level || '';
+  setEpSessions(a.sessionsPerWeek || 4);
+  document.getElementById('ep-error').textContent = '';
+  show('trainer-edit-profile');
+}
+
+async function saveEditAthleteProfile() {
+  const btn = document.getElementById('ep-save');
+  const errEl = document.getElementById('ep-error');
+  errEl.textContent = '';
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const getN = id => { const v = document.getElementById(id).value; return v ? parseFloat(v) : null; };
+  const selectedSess = document.querySelector('#ep-sessions .na-pill-active');
+  const fields = {
+    name: document.getElementById('ep-name').value.trim(),
+    email: document.getElementById('ep-email').value.trim() || null,
+    phone: document.getElementById('ep-phone').value.trim() || null,
+    birthdate: document.getElementById('ep-birthdate').value || null,
+    sessionsPerWeek: selectedSess ? parseInt(selectedSess.dataset.val) : _editingAthlete.sessionsPerWeek,
+    profile: {
+      weight: getN('ep-weight'),
+      height: getN('ep-height'),
+      bodyFat: getN('ep-bodyfat'),
+      muscleMass: getN('ep-muscle'),
+      goal: document.getElementById('ep-goal').value,
+      level: document.getElementById('ep-level').value,
+      injuries: document.getElementById('ep-injuries').value.trim(),
+      notes: document.getElementById('ep-notes').value.trim()
+    }
+  };
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update-athlete', token: TRAINER_TOKEN, clientId: trainerClientId, fields })
+    });
+    const json = await res.json();
+    if (!json.ok) { errEl.textContent = json.error || 'Error al guardar'; btn.disabled = false; btn.textContent = 'Guardar cambios'; return; }
+    dynamicAthletesCache = null; // force refresh next list
+    document.getElementById('tclient-name').textContent = fields.name;
+    btn.textContent = '✅ Guardado';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Guardar cambios'; show('trainer-client'); }, 1200);
+  } catch (e) {
+    errEl.textContent = 'Error de red'; btn.disabled = false; btn.textContent = 'Guardar cambios';
+  }
+}
+
+async function deleteCurrentAthlete() {
+  if (!trainerClientId) return;
+  const name = _editingAthlete?.name || trainerClientId;
+  if (!confirm(`¿Eliminar a ${name} permanentemente? Se borrarán rutinas, sesiones completadas y todo el historial. No se puede deshacer.`)) return;
+  if (!confirm('Última confirmación: ¿seguro que querés eliminar a ' + name + '?')) return;
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete-athlete', token: TRAINER_TOKEN, clientId: trainerClientId, hard: true })
+    });
+    const json = await res.json();
+    if (json.ok) {
+      dynamicAthletesCache = null;
+      trainerClientId = null;
+      show('trainer-portal');
+    } else {
+      alert('Error: ' + (json.error || 'no se pudo eliminar'));
+    }
+  } catch (e) { alert('Error de red'); }
 }
 
 async function openTrainerClient(clientId, clientName) {
