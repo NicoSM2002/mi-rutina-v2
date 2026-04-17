@@ -1,1 +1,1 @@
-Codos fijos. Supinacion completa al subir. Sin balanceo. Baja controlado.
+Codos pegados al torso y fijos. Supina las muñecas al subir, aprieta en el pico. Baja controlado sin bloquear el codo.
