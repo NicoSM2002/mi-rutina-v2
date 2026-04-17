@@ -1296,6 +1296,16 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 .expicker-gif { width:52px; height:52px; border-radius:8px; object-fit:cover; background:var(--bg); flex-shrink:0; }
 .expicker-name { font-family:var(--font-d); font-size:13px; font-weight:700; color:var(--t1); }
 .expicker-muscle { font-size:11px; color:var(--t2); margin-top:2px; text-transform:capitalize; }
+.expicker-cat-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+.expicker-cat-card { background:var(--s1); border:1px solid rgba(255,255,255,.05); border-radius:14px; padding:14px 10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:98px; transition:border-color .15s, background .15s; }
+.expicker-cat-card:active { border-color:var(--ac); background:var(--s2); }
+.expicker-cat-emoji { font-size:28px; line-height:1; }
+.expicker-cat-label { font-family:var(--font-d); font-size:12px; font-weight:700; color:var(--t1); text-align:center; line-height:1.2; }
+.expicker-cat-count { font-size:10px; color:var(--t3); letter-spacing:.3px; }
+.expicker-back { display:flex; align-items:center; gap:6px; background:none; border:none; color:var(--acl); font-family:var(--font-b); font-size:13px; font-weight:600; padding:4px 0; cursor:pointer; margin-bottom:10px; }
+.expicker-back:active { opacity:.7; }
+.expicker-subtitle { font-family:var(--font-d); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--t3); margin-bottom:10px; }
+.expicker-empty { text-align:center; padding:40px 20px; color:var(--t3); font-size:13px; }
 
 /* Nota */
 .nota-card {
@@ -4846,10 +4856,19 @@ function buildExerciseCatalog(query) {
   return catalog.filter(e => e.name.toLowerCase().includes(q) || (MUSC_LABELS[e.muscle]||e.muscle).toLowerCase().includes(q));
 }
 
+let _pickerSelectedMuscle = null;
+
+const MUSC_EMOJI = {
+  pecho:'🫁', espalda:'🔙', hombros:'🏋️', biceps:'💪', triceps:'💪',
+  cuadriceps:'🦵', isquio:'🦵', isquiotibiales:'🦵', gluteo:'🍑',
+  pantorrilla:'🦶', trapecio:'🧱', abdomen:'🔥', antebrazo:'✊'
+};
+
 function openExercisePicker(ci, ei, week) {
   editorPickerTarget = { day:editorDay, ci, ei, week };
-  renderPickerList('');
+  _pickerSelectedMuscle = null;
   document.getElementById('expicker-search').value = '';
+  renderPickerList('');
   document.getElementById('expicker-overlay').classList.add('show');
 }
 
@@ -4857,17 +4876,73 @@ function closeExercisePicker() {
   document.getElementById('expicker-overlay').classList.remove('show');
 }
 
+function selectMuscleCategory(muscle) {
+  _pickerSelectedMuscle = muscle;
+  renderPickerList('');
+}
+
+function backToMuscleCategories() {
+  _pickerSelectedMuscle = null;
+  document.getElementById('expicker-search').value = '';
+  renderPickerList('');
+}
+
 function renderPickerList(query) {
-  _pickerCatalog = buildExerciseCatalog(query);
   const list = document.getElementById('expicker-list');
-  list.innerHTML = _pickerCatalog.map((ex, idx) => `
-    <div class="expicker-item" onclick="selectExerciseByIdx(${idx})">
-      <img class="expicker-gif" src="${ex.img}" alt="${ex.name}">
-      <div>
-        <div class="expicker-name">${ex.name}</div>
-        <div class="expicker-muscle">${MUSC_LABELS[ex.muscle]||ex.muscle}</div>
-      </div>
-    </div>`).join('');
+  const fullCatalog = buildExerciseCatalog('');
+
+  // 1) Si hay búsqueda: mostrar resultados filtrados (modo rápido)
+  if (query && query.trim()) {
+    _pickerCatalog = buildExerciseCatalog(query);
+    if (!_pickerCatalog.length) {
+      list.innerHTML = `<div class="expicker-empty">Sin resultados para "${query}"</div>`;
+      return;
+    }
+    list.innerHTML = _pickerCatalog.map((ex, idx) => `
+      <div class="expicker-item" onclick="selectExerciseByIdx(${idx})">
+        <img class="expicker-gif" src="${ex.img}" alt="${ex.name}">
+        <div>
+          <div class="expicker-name">${ex.name}</div>
+          <div class="expicker-muscle">${MUSC_LABELS[ex.muscle]||ex.muscle}</div>
+        </div>
+      </div>`).join('');
+    return;
+  }
+
+  // 2) Sin búsqueda y sin grupo seleccionado: mostrar categorías
+  if (!_pickerSelectedMuscle) {
+    const counts = {};
+    for (const ex of fullCatalog) counts[ex.muscle] = (counts[ex.muscle] || 0) + 1;
+    const muscles = Object.keys(counts).sort((a,b) => (MUSC_LABELS[a]||a).localeCompare(MUSC_LABELS[b]||b));
+    _pickerCatalog = [];
+    list.innerHTML = `
+      <div class="expicker-subtitle">Elegí un grupo muscular</div>
+      <div class="expicker-cat-grid">
+        ${muscles.map(m => `
+          <div class="expicker-cat-card" onclick="selectMuscleCategory('${m}')">
+            <div class="expicker-cat-emoji">${MUSC_EMOJI[m]||'💪'}</div>
+            <div class="expicker-cat-label">${MUSC_LABELS[m]||m}</div>
+            <div class="expicker-cat-count">${counts[m]} ejercicio${counts[m]===1?'':'s'}</div>
+          </div>`).join('')}
+      </div>`;
+    return;
+  }
+
+  // 3) Con grupo seleccionado: mostrar sus ejercicios
+  _pickerCatalog = fullCatalog.filter(ex => ex.muscle === _pickerSelectedMuscle);
+  const label = MUSC_LABELS[_pickerSelectedMuscle] || _pickerSelectedMuscle;
+  list.innerHTML = `
+    <button class="expicker-back" onclick="backToMuscleCategories()">‹ Categorías</button>
+    <div class="expicker-subtitle">${label} · ${_pickerCatalog.length} ejercicios</div>
+    ${_pickerCatalog.map((ex, idx) => `
+      <div class="expicker-item" onclick="selectExerciseByIdx(${idx})">
+        <img class="expicker-gif" src="${ex.img}" alt="${ex.name}">
+        <div>
+          <div class="expicker-name">${ex.name}</div>
+          <div class="expicker-muscle">${label}</div>
+        </div>
+      </div>`).join('')}
+  `;
 }
 
 function selectExerciseByIdx(idx) {
@@ -4894,8 +4969,9 @@ function selectExerciseByIdx(idx) {
 
 function openWarmupPicker(wi) {
   editorPickerTarget = { day: editorDay, kind: 'warmup', wi };
-  renderPickerList('');
+  _pickerSelectedMuscle = null;
   document.getElementById('expicker-search').value = '';
+  renderPickerList('');
   document.getElementById('expicker-overlay').classList.add('show');
 }
 
