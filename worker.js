@@ -811,7 +811,13 @@ Si un campo no aparece claramente en el PDF, poné null. No inventes.`;
       if (body.admin === 'admin2026') {
         return new Response(JSON.stringify({ ok: true, trainers }), { headers: cors });
       }
-      const safe = trainers.map(t => ({ username: t.username, name: t.name, photoUrl: t.photoUrl }));
+      const safe = trainers.map(t => ({
+        username: t.username, name: t.name, photoUrl: t.photoUrl,
+        yearsExperience: t.yearsExperience || null,
+        specialty: t.specialty || '',
+        education: t.education || '',
+        bio: t.bio || ''
+      }));
       return new Response(JSON.stringify({ ok: true, trainers: safe }), { headers: cors });
     }
 
