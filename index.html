@@ -1046,12 +1046,12 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
 /* ══════════════════════════════
    TRAINER PORTAL
 ══════════════════════════════ */
-#trainer-portal, #trainer-new-athlete, #trainer-edit-profile {
+#trainer-portal, #trainer-new-athlete, #trainer-edit-profile, #trainer-own-profile, #admin-trainer-detail {
   background:var(--bg);
   display:flex; flex-direction:column;
   overflow-y:auto; -webkit-overflow-scrolling:touch;
 }
-#trainer-portal::-webkit-scrollbar, #trainer-new-athlete::-webkit-scrollbar, #trainer-edit-profile::-webkit-scrollbar { display:none; }
+#trainer-portal::-webkit-scrollbar, #trainer-new-athlete::-webkit-scrollbar, #trainer-edit-profile::-webkit-scrollbar, #trainer-own-profile::-webkit-scrollbar, #admin-trainer-detail::-webkit-scrollbar { display:none; }
 .tportal-header {
   background:var(--s1); border-bottom:1px solid var(--b);
   padding:calc(var(--sat) + 16px) 16px 16px;
@@ -1742,7 +1742,10 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
   <div class="tportal-header">
     <button class="back-btn" onclick="show('role-select')">‹ Salir</button>
     <div class="tportal-title">Portal Entrenador</div>
-    <button class="new-athlete-btn" onclick="openNewAthleteForm()" title="Nuevo atleta">+</button>
+    <div style="display:flex;gap:6px">
+      <button class="new-athlete-btn" onclick="openTrainerOwnProfile()" title="Mi perfil" style="background:linear-gradient(135deg,#6366f1,#818cf8);font-size:18px">⚙️</button>
+      <button class="new-athlete-btn" onclick="openNewAthleteForm()" title="Nuevo atleta">+</button>
+    </div>
   </div>
   <div class="tportal-body">
     <div class="section-label" style="margin-bottom:12px">Mis clientes</div>
@@ -1857,6 +1860,51 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
   </div>
 </div>
 
+<!-- ══ TRAINER OWN PROFILE ══ -->
+<div class="screen" id="trainer-own-profile">
+  <div class="tportal-header">
+    <button class="back-btn" onclick="show('trainer-portal')">‹ Volver</button>
+    <div class="tportal-title">Mi perfil</div>
+  </div>
+  <div class="tportal-body" style="padding-bottom:40px">
+    <form id="top-form" onsubmit="event.preventDefault(); saveTrainerOwnProfile();" autocomplete="off">
+      <div class="na-field" style="text-align:center">
+        <div id="top-photo-preview" style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#818cf8);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;color:#fff;font-size:36px;overflow:hidden"></div>
+        <input id="top-photo-input" type="file" accept="image/*" hidden onchange="handleOwnTrainerPhoto(event)">
+        <button type="button" onclick="document.getElementById('top-photo-input').click()"
+          style="background:none;border:1px dashed var(--b);color:var(--t2);padding:8px 14px;border-radius:10px;font-size:12px;cursor:pointer">📷 Cambiar foto</button>
+      </div>
+      <div class="na-field"><label class="na-label">Nombre completo</label>
+        <input class="na-input" id="top-name" type="text" required></div>
+      <div class="na-field"><label class="na-label">Email</label>
+        <input class="na-input" id="top-email" type="email"></div>
+      <div class="na-field"><label class="na-label">Teléfono</label>
+        <input class="na-input" id="top-phone" type="tel"></div>
+      <div class="na-field"><label class="na-label">Años de experiencia</label>
+        <input class="na-input" id="top-years" type="number" inputmode="numeric"></div>
+      <div class="na-field"><label class="na-label">Especialidad</label>
+        <input class="na-input" id="top-specialty" type="text" placeholder="Ej: Hipertrofia y fuerza"></div>
+      <div class="na-field"><label class="na-label">Estudios y certificaciones</label>
+        <textarea class="na-input" id="top-education" rows="3" placeholder="Ej: Lic. Ciencias del Deporte, Certificación NSCA"></textarea></div>
+      <div class="na-field"><label class="na-label">Sobre mí</label>
+        <textarea class="na-input" id="top-bio" rows="3" placeholder="Breve descripción (2-3 líneas)"></textarea></div>
+      <div id="top-error" class="tlogin-error"></div>
+      <button type="submit" class="tlogin-btn" id="top-save" style="margin-top:18px">Guardar cambios</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ ADMIN TRAINER DETAIL (con atletas) ══ -->
+<div class="screen" id="admin-trainer-detail">
+  <div class="tportal-header">
+    <button class="back-btn" onclick="show('admin-support')">‹ Volver</button>
+    <div class="tportal-title">Detalle entrenador</div>
+  </div>
+  <div class="tportal-body" style="padding-bottom:40px" id="atd-body">
+    Cargando...
+  </div>
+</div>
+
 <!-- ══ TRAINER EDIT ATHLETE PROFILE ══ -->
 <div class="screen" id="trainer-edit-profile">
   <div class="tportal-header">
@@ -1958,6 +2006,22 @@ html, body { height:100%; overflow:hidden; font-family:var(--font-b),sans-serif;
     <div id="pg-notes-wrap" style="display:none">
       <div class="section-label">Notas del entrenador</div>
       <div class="progress-card"><div id="pg-notes"></div></div>
+    </div>
+    <div id="pg-trainer-wrap" style="display:none;margin-top:18px">
+      <div class="section-label">👨‍🏫 Tu entrenador</div>
+      <div class="progress-card" style="display:flex;gap:14px;align-items:flex-start">
+        <div id="pg-trainer-avatar" style="width:70px;height:70px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-d);font-weight:800;font-size:22px;overflow:hidden"></div>
+        <div style="flex:1;min-width:0">
+          <div id="pg-trainer-name" style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--t1)"></div>
+          <div id="pg-trainer-specialty" style="font-size:12px;color:var(--acl);margin-top:2px"></div>
+          <div id="pg-trainer-exp" style="font-size:11px;color:var(--t3);margin-top:4px"></div>
+          <div id="pg-trainer-bio" style="font-size:13px;color:var(--t2);margin-top:10px;line-height:1.5"></div>
+          <div id="pg-trainer-edu-wrap" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);display:none">
+            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Estudios y certificaciones</div>
+            <div id="pg-trainer-edu" style="font-size:12px;color:var(--t2);line-height:1.5;white-space:pre-wrap"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -3289,7 +3353,41 @@ function showGenericProfile(athlete) {
   const wrap  = document.getElementById('pg-notes-wrap');
   if (notes) { wrap.style.display = ''; document.getElementById('pg-notes').textContent = notes; }
   else { wrap.style.display = 'none'; }
+  loadAthleteTrainerCard(athlete.trainerId);
   show('profile-generic');
+}
+
+async function loadAthleteTrainerCard(trainerId) {
+  const wrap = document.getElementById('pg-trainer-wrap');
+  if (!trainerId) { wrap.style.display = 'none'; return; }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'list-trainers' })
+    });
+    const json = await res.json();
+    const t = (json.trainers || []).find(x => x.username === trainerId);
+    if (!t) { wrap.style.display = 'none'; return; }
+    const initials = (t.name || '?').split(/\s+/).map(s => s[0]).join('').slice(0,2).toUpperCase();
+    const avatar = document.getElementById('pg-trainer-avatar');
+    avatar.innerHTML = t.photoUrl
+      ? `<img src="${t.photoUrl}" style="width:100%;height:100%;object-fit:cover">`
+      : initials;
+    document.getElementById('pg-trainer-name').textContent = t.name || '';
+    const specEl = document.getElementById('pg-trainer-specialty');
+    specEl.textContent = t.specialty || '';
+    specEl.style.display = t.specialty ? '' : 'none';
+    const expEl = document.getElementById('pg-trainer-exp');
+    expEl.textContent = t.yearsExperience ? `${t.yearsExperience} años de experiencia` : '';
+    expEl.style.display = t.yearsExperience ? '' : 'none';
+    const bioEl = document.getElementById('pg-trainer-bio');
+    bioEl.textContent = t.bio || '';
+    bioEl.style.display = t.bio ? '' : 'none';
+    const eduWrap = document.getElementById('pg-trainer-edu-wrap');
+    if (t.education) { eduWrap.style.display = ''; document.getElementById('pg-trainer-edu').textContent = t.education; }
+    else eduWrap.style.display = 'none';
+    wrap.style.display = '';
+  } catch { wrap.style.display = 'none'; }
 }
 let trainerClientId = null;
 let trainerData = { completions:[], meals:[] };
@@ -3300,6 +3398,8 @@ let editorPickerTarget = null;
 let _pickerCatalog = [];
 const TRAINER_TOKEN = 'ent2026';
 const MUSC_LABELS = { pecho:'Pecho', espalda:'Espalda', biceps:'Bíceps', triceps:'Tríceps', hombros:'Hombros', cuadriceps:'Cuádriceps', isquio:'Isquiotibiales', gluteo:'Glúteo', pantorrilla:'Pantorrilla', trapecio:'Trapecio', abdomen:'Abdomen' };
+
+let currentTrainer = null;
 
 async function trainerLogin() {
   const user = document.getElementById('trainer-username').value.trim().toLowerCase();
@@ -3313,11 +3413,94 @@ async function trainerLogin() {
     const json = await res.json();
     const found = (json.trainers || []).some(t => t.username === user);
     if (!found) { errEl.textContent = 'Usuario no encontrado.'; return; }
+    currentTrainer = user;
     document.getElementById('trainer-username').value = '';
     show('trainer-portal');
     loadTrainerExtraClients();
   } catch (e) {
     errEl.textContent = 'Error de red'; }
+}
+
+/* ── TRAINER OWN PROFILE ── */
+let _topPhotoUrl = null;
+async function openTrainerOwnProfile() {
+  if (!currentTrainer) { alert('No estás logueado'); return; }
+  const errEl = document.getElementById('top-error'); errEl.textContent = '';
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'list-trainers', admin: 'admin2026' })
+    });
+    const json = await res.json();
+    const t = (json.trainers || []).find(x => x.username === currentTrainer);
+    if (!t) {
+      // Fallback sin admin (campos safe)
+      const r2 = await fetch(WORKER_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action: 'list-trainers' })
+      });
+      const j2 = await r2.json();
+      const t2 = (j2.trainers || []).find(x => x.username === currentTrainer);
+      if (!t2) { alert('No se encontró tu perfil'); return; }
+      fillTrainerOwnProfile(t2);
+    } else {
+      fillTrainerOwnProfile(t);
+    }
+    show('trainer-own-profile');
+  } catch { alert('Error de red'); }
+}
+
+function fillTrainerOwnProfile(t) {
+  _topPhotoUrl = t.photoUrl || null;
+  document.getElementById('top-name').value = t.name || '';
+  document.getElementById('top-email').value = t.email || '';
+  document.getElementById('top-phone').value = t.phone || '';
+  document.getElementById('top-years').value = t.yearsExperience || '';
+  document.getElementById('top-specialty').value = t.specialty || '';
+  document.getElementById('top-education').value = t.education || '';
+  document.getElementById('top-bio').value = t.bio || '';
+  updateTopPhotoPreview(t);
+}
+
+function updateTopPhotoPreview(t) {
+  const el = document.getElementById('top-photo-preview');
+  const initials = (t.name || t.username || '?').split(/\s+/).map(s => s[0]).join('').slice(0,2).toUpperCase();
+  el.innerHTML = _topPhotoUrl ? `<img src="${_topPhotoUrl}" style="width:100%;height:100%;object-fit:cover">` : initials;
+}
+
+async function handleOwnTrainerPhoto(event) {
+  const file = event.target.files && event.target.files[0]; if (!file) return;
+  const fd = new FormData(); fd.append('photo', file); fd.append('folder', 'trainers');
+  try {
+    const res = await fetch(WORKER_URL + '/upload-photo', { method: 'POST', body: fd });
+    const json = await res.json();
+    if (json.ok && json.url) { _topPhotoUrl = json.url; updateTopPhotoPreview({ name: document.getElementById('top-name').value }); }
+  } catch {}
+}
+
+async function saveTrainerOwnProfile() {
+  const btn = document.getElementById('top-save'); const errEl = document.getElementById('top-error');
+  errEl.textContent = ''; btn.disabled = true; btn.textContent = 'Guardando…';
+  const fields = {
+    name: document.getElementById('top-name').value.trim(),
+    email: document.getElementById('top-email').value.trim() || null,
+    phone: document.getElementById('top-phone').value.trim() || null,
+    yearsExperience: parseInt(document.getElementById('top-years').value) || null,
+    specialty: document.getElementById('top-specialty').value.trim(),
+    education: document.getElementById('top-education').value.trim(),
+    bio: document.getElementById('top-bio').value.trim(),
+    photoUrl: _topPhotoUrl
+  };
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'update-trainer', self: true, username: currentTrainer, fields })
+    });
+    const json = await res.json();
+    if (!json.ok) { errEl.textContent = json.error || 'Error al guardar'; btn.disabled = false; btn.textContent = 'Guardar cambios'; return; }
+    btn.textContent = '✅ Guardado';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Guardar cambios'; show('trainer-portal'); }, 1000);
+  } catch { errEl.textContent = 'Error de red'; btn.disabled = false; btn.textContent = 'Guardar cambios'; }
 }
 
 /* Render dynamically-created athletes as additional client cards */
@@ -3476,7 +3659,7 @@ async function submitNewAthlete() {
   try {
     const res = await fetch(WORKER_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'create-athlete', token: TRAINER_TOKEN, athlete })
+      body: JSON.stringify({ action:'create-athlete', token: TRAINER_TOKEN, athlete, trainerId: currentTrainer })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Error al crear');
@@ -5521,11 +5704,11 @@ async function loadAdminTrainers() {
       const meta = [t.email, t.phone].filter(Boolean).join(' · ') || `@${t.username}`;
       return `<div class="admin-trainer-card">
         <div class="admin-trainer-avatar">${avatarInner}</div>
-        <div class="admin-trainer-info">
+        <div class="admin-trainer-info" style="cursor:pointer" onclick="openAdminTrainerDetail('${t.username}')">
           <div class="admin-trainer-name">${t.name}</div>
           <div class="admin-trainer-meta">@${t.username} · ${meta}</div>
         </div>
-        <button class="admin-trainer-del" onclick="deleteTrainer('${t.username}','${(t.name||'').replace(/'/g,'&#39;')}')" title="Eliminar">×</button>
+        <button class="admin-trainer-del" onclick="event.stopPropagation();deleteTrainer('${t.username}','${(t.name||'').replace(/'/g,'&#39;')}')" title="Eliminar">×</button>
       </div>`;
     }).join('');
   } catch (e) {
@@ -5580,6 +5763,55 @@ async function handleTrainerPhoto(event) {
   } catch {
     titleEl.textContent = 'Error de red';
   }
+}
+
+async function openAdminTrainerDetail(username) {
+  const body = document.getElementById('atd-body');
+  body.innerHTML = '<div class="admin-chat-empty">Cargando...</div>';
+  show('admin-trainer-detail');
+  try {
+    const [tRes, aRes] = await Promise.all([
+      fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action: 'list-trainers', admin: ADMIN_PW }) }),
+      fetch(WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action: 'list-athletes-by-trainer', admin: ADMIN_PW, trainerUsername: username }) })
+    ]);
+    const tJson = await tRes.json();
+    const aJson = await aRes.json();
+    const t = (tJson.trainers || []).find(x => x.username === username);
+    const athletes = aJson.athletes || [];
+    if (!t) { body.innerHTML = '<div class="admin-chat-empty">No encontrado</div>'; return; }
+    const initials = (t.name || '?').split(/\s+/).map(s => s[0]).join('').slice(0,2).toUpperCase();
+    const avatar = t.photoUrl
+      ? `<img src="${t.photoUrl}" style="width:100%;height:100%;object-fit:cover">`
+      : initials;
+    const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const fieldIf = (label, v) => v ? `<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${label}</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">${esc(v)}</div></div>` : '';
+    body.innerHTML = `
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:20px">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px;overflow:hidden">${avatar}</div>
+        <div><div style="font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--t1)">${esc(t.name)}</div>
+          <div style="font-size:12px;color:var(--t2)">@${esc(t.username)}</div></div>
+      </div>
+      <div class="progress-card" style="margin-bottom:16px">
+        ${fieldIf('Email', t.email)}
+        ${fieldIf('Teléfono', t.phone)}
+        ${fieldIf('Años de experiencia', t.yearsExperience)}
+        ${fieldIf('Especialidad', t.specialty)}
+        ${fieldIf('Estudios', t.education)}
+        ${fieldIf('Bio', t.bio)}
+      </div>
+      <div class="section-label" style="margin-bottom:10px">Atletas (${athletes.length})</div>
+      ${athletes.length === 0 ? '<div class="admin-chat-empty">Este entrenador no ha creado atletas todavía.</div>'
+        : athletes.map(a => `<div class="admin-trainer-card">
+            <div class="admin-trainer-avatar" style="background:linear-gradient(135deg,#34d399,#06b6d4)">${(a.name||'?').split(/\\s+/).map(s=>s[0]).join('').slice(0,2).toUpperCase()}</div>
+            <div class="admin-trainer-info">
+              <div class="admin-trainer-name">${esc(a.name)}</div>
+              <div class="admin-trainer-meta">@${esc(a.username||a.clientId)} · ${a.sessionsPerWeek||'?'}/sem</div>
+            </div>
+          </div>`).join('')}
+    `;
+  } catch { body.innerHTML = '<div class="admin-chat-empty">Error al cargar</div>'; }
 }
 
 async function submitCreateTrainer() {

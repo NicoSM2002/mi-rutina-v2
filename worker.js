@@ -606,6 +606,7 @@ Devolvé SOLO un JSON así, sin texto extra:
         clientId: username,
         username,
         name,
+        trainerId:       (body.trainerId || '').trim() || null,
         email:           (input.email || '').trim() || null,
         phone:           (input.phone || '').trim() || null,
         birthdate:       input.birthdate || null,
@@ -814,6 +815,36 @@ Si un campo no aparece claramente en el PDF, poné null. No inventes.`;
       return new Response(JSON.stringify({ ok: true, trainers: safe }), { headers: cors });
     }
 
+    // ── UPDATE TRAINER (self or admin) ──
+    if (body.action === 'update-trainer') {
+      const username = (body.username || '').trim().toLowerCase();
+      if (!username) return new Response(JSON.stringify({ ok: false, error: 'Falta username' }), { headers: cors });
+      const existing = await env.DB.get(`trainer:${username}`, 'json');
+      if (!existing) return new Response(JSON.stringify({ ok: false, error: 'Entrenador no encontrado' }), { headers: cors });
+      if (body.admin !== 'admin2026' && !body.self) {
+        return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), { headers: cors });
+      }
+      const patch = body.fields || {};
+      const updated = {
+        ...existing,
+        ...patch,
+        username: existing.username,  // immutable
+        createdAt: existing.createdAt
+      };
+      await env.DB.put(`trainer:${username}`, JSON.stringify(updated));
+      return new Response(JSON.stringify({ ok: true, trainer: updated }), { headers: cors });
+    }
+
+    // ── LIST ATHLETES BY TRAINER (admin only) ──
+    if (body.action === 'list-athletes-by-trainer') {
+      if (body.admin !== 'admin2026') {
+        return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), { headers: cors });
+      }
+      const all = await listAthletes(env, { includeArchived: false });
+      const filtered = all.filter(a => a.trainerId === body.trainerUsername);
+      return new Response(JSON.stringify({ ok: true, athletes: filtered }), { headers: cors });
+    }
+
     // ── CREATE TRAINER (admin only) ──
     if (body.action === 'create-trainer') {
       if (body.admin !== 'admin2026') {
@@ -834,6 +865,10 @@ Si un campo no aparece claramente en el PDF, poné null. No inventes.`;
         email: (t.email || '').trim() || null,
         phone: (t.phone || '').trim() || null,
         photoUrl: t.photoUrl || null,
+        yearsExperience: t.yearsExperience || null,
+        specialty: t.specialty || '',
+        education: t.education || '',
+        bio: t.bio || '',
         createdAt: Date.now()
       };
       await env.DB.put(`trainer:${username}`, JSON.stringify(record));
